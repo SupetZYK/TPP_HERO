@@ -16,13 +16,14 @@ PID_Regulator_t pitchSpeedPID = PID_INIT(40.0, 0.0, 15.0, 10000.0, 10000.0, 1000
 
 //PID_Regulator_t pitchPositionPID = PID_INIT(5.0, 0.0, 0.0, 1000000.0, 1000000.0, 1000000.0, 100000.0);
 //PID_Regulator_t pitchSpeedPID = PID_INIT(1.0, 0.0, 0.0, 10000.0, 10000.0, 10000.0, 4900.0);
-
-int16_t YawZeroEncoderBias=4670;
-int16_t PitchZeroEncoderBias=8140;
+//ÔÆÌ¨Æ«ÖÃ
+//4ºÅ³µ590 5041
+int16_t YawZeroEncoderBias=5950;
+int16_t PitchZeroEncoderBias=790;
 float yawRealAngle=0;
 float pitchRealAngle=0;
 extern IMUDataTypedef imu_data;
-//
+
 void setYawWithAngle(float targetAngle){
 	if(IOPool_hasNextRead(GMYAWRxIOPool, 0)){
 		//TargetAngle

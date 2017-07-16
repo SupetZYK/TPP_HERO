@@ -18,7 +18,8 @@ typedef enum
 	HERO_STANDBY=4,
 }Hero_Order_t;
 
-
+void Hero_Prepare_Get_Bullet();
+void Hero_Recover();
 
 extern Hero_Order_t Hero_Order;
 extern Hero_State_t Hero_State;
