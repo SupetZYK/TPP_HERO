@@ -6,8 +6,8 @@
 #define CMBL_DIR 1
 #define CMBR_DIR 1
 
-#define GMYAW_DIR -1
-#define GMPITCH_DIR -1
+#define GMYAW_DIR 1
+#define GMPITCH_DIR 1
 
 #define AMUDFL_DIR 1
 #define AMUDFR_DIR 1

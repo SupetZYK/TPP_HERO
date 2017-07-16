@@ -16,8 +16,7 @@ PID_Regulator_t pitchSpeedPID = PID_INIT(40.0, 0.0, 15.0, 10000.0, 10000.0, 1000
 
 //PID_Regulator_t pitchPositionPID = PID_INIT(5.0, 0.0, 0.0, 1000000.0, 1000000.0, 1000000.0, 100000.0);
 //PID_Regulator_t pitchSpeedPID = PID_INIT(1.0, 0.0, 0.0, 10000.0, 10000.0, 10000.0, 4900.0);
-//ÔÆÌ¨Æ«ÖÃ
-//4ºÅ³µ590 5041
+
 int16_t YawZeroEncoderBias=4670;
 int16_t PitchZeroEncoderBias=8140;
 float yawRealAngle=0;
@@ -50,7 +49,7 @@ void setPitchWithAngle(float targetAngle){
 		MINMAX(targetAngle, PITCHDOWNLIMIT, PITCHUPLIMIT);
 		//RealAngle
 		IOPool_getNextRead(GMPITCHRxIOPool, 0); 
-		pitchRealAngle = -(IOPool_pGetReadData(GMPITCHRxIOPool, 0)->angle - PitchZeroEncoderBias) * 360 / 8192.0;
+		pitchRealAngle = (IOPool_pGetReadData(GMPITCHRxIOPool, 0)->angle - PitchZeroEncoderBias) * 360 / 8192.0;
 		NORMALIZE_ANGLE180(pitchRealAngle);
 		//RealSpeed
 //		IOPool_getNextRead(IMUIOPool, 0);
