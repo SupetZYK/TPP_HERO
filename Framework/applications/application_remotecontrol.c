@@ -12,6 +12,8 @@
 #include "utilities_tim.h"
 #include "peripheral_define.h"
 #include "tim.h"
+#include "tasks_Hero.h"
+#include "tasks_motor.h"
 #define VAL_LIMIT(val, min, max)\
 if(val<=min)\
 {\
@@ -27,23 +29,29 @@ else if(val>=max)\
 
 
 
+//extern RampGen_t frictionRamp ;  //摩擦轮斜坡
+//extern RampGen_t LRSpeedRamp ;   //mouse左右移动斜坡
+//extern RampGen_t FBSpeedRamp  ;   //mouse前后移动斜坡
 
 extern float yawAngleTarget, pitchAngleTarget;
-
+/////////////////////控制用的状态/////////////////////
+//控制模式
 InputMode_e inputmode = REMOTE_INPUT;
-
+//工作状态
 WorkState_e workState = PREPARE_STATE;  //PREPARE
-
+//上一次的工作状态
 WorkState_e lastWorkState = PREPARE_STATE;
-
+//射击模式，手动或者自动
 Shoot_Mode_e shootMode = MANUL;
 //系统状态
 Emergency_Flag emergency_Flag = NORMAL;
-
+//摩擦轮状态
 FrictionWheelState_e friction_wheel_state = FRICTION_WHEEL_OFF;
-
-static RemoteSwitch_t switch1;   
-
+//遥控器左侧拨杆
+static RemoteSwitch_t switch1;  
+//遥控器右侧拨杆
+static RemoteSwitch_t switch2;   
+//射击状态
 volatile Shoot_State_e shootState = NOSHOOTING;
 ///////////////////////////////////////////////////////
 
@@ -64,42 +72,29 @@ void RCProcess(RC_CtrlData_t* pRC_CtrlData){
 				}break;
 				case KEY_MOUSE_INPUT:
 				{
-
+					//鼠标键盘控制模式
+					//暂时为自动瞄准模式
 					MouseKeyControlProcess(&(pRC_CtrlData->mouse),&(pRC_CtrlData->key));
 					SetEmergencyFlag(NORMAL);
 			//		SetShootMode(AUTO);
 				}break;
-				case STOP:
+				case REMOTE_BULLET_INPUT:
 				{
-					SetEmergencyFlag(EMERGENCY);
-	
+					SetEmergencyFlag(NORMAL);
+					BulletControlProcess(&(pRC_CtrlData->rc));  //取弹模式
 				}break;
 			}
 			
 			
-//			if(countwhile >= 300){
-//			countwhile = 0;
-//			fw_printf("ch0 = %d | ", RC_CtrlData.rc.ch0);
-//				fw_printf("ch1 = %d | ", RC_CtrlData.rc.ch1);
-//				fw_printf("ch2 = %d | ", RC_CtrlData.rc.ch2);
-//				fw_printf("ch3 = %d \r\n", RC_CtrlData.rc.ch3);
-//				
-//				fw_printf("s1 = %d | ", RC_CtrlData.rc.s1);
-//				fw_printf("s2 = %d \r\n", RC_CtrlData.rc.s2);
-//				
-//				fw_printf("x = %d | ", RC_CtrlData.mouse.x);
-//				fw_printf("y = %d | ", RC_CtrlData.mouse.y);
-//				fw_printf("z = %d | ", RC_CtrlData.mouse.z);
-//				fw_printf("l = %d | ", RC_CtrlData.mouse.press_l);
-//				fw_printf("r = %d \r\n", RC_CtrlData.mouse.press_r);
-//				
-//				fw_printf("key = %d \r\n", RC_CtrlData.key.v);
-//				fw_printf("===========\r\n");
-//		}else{
-//			countwhile++;
-//		}
-//		}
-//	}
+			GetRemoteSwitchAction(&switch2,pRC_CtrlData->rc.s2);
+			if(switch2.switch_value1 == REMOTE_SWITCH_CHANGE_3TO2)
+			{
+				Hero_Order=HERO_GETBULLET;
+			}
+			if(switch2.switch_value1 == REMOTE_SWITCH_CHANGE_2TO3)
+			{
+				Hero_Order=HERO_STOP;
+			}
 }
 
 extern uint64_t last_rc_time;
@@ -109,9 +104,9 @@ void Timer_1ms_lTask(void const * argument)
 //	xLastWakeTime = xTaskGetTickCount();
 //	static int countwhile = 0;
 //	static int countwhile1 = 0;
-//	unsigned portBASE_TYPE StackResidue; //
+//	unsigned portBASE_TYPE StackResidue; //栈剩余
 	while(1)  {       //motor control frequency 2ms
-
+//监控任务
 //		SuperviseTask();    
 			//fw_printf("tick_2ms\r\n");
 		uint64_t t=fw_getTimeMicros();
@@ -130,17 +125,14 @@ void Timer_1ms_lTask(void const * argument)
 }
 
 
-
+//////////////////////////////遥控器控制模式处理
 extern uint8_t engineer_task_on;
-
-
-void GetRemoteSwitchAction(RemoteSwitch_t *sw, uint8_t val);
 
 void RemoteControlProcess(Remote_t *rc)
 {
     if(GetWorkState()!=PREPARE_STATE)
     {
-
+			//执行engineering task
 				if(rc->s2==1)
 				{
 					ChassisSpeedRef.forward_back_ref = (rc->ch1 - 1024) / 66.0 * 4000;
@@ -173,13 +165,28 @@ void RemoteControlProcess(Remote_t *rc)
 //	/* not used to control, just as a flag */ 
 //    GimbalRef.pitch_speed_ref = rc->ch3 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET;    //speed_ref仅做输入量判断用
 //    GimbalRef.yaw_speed_ref   = (rc->ch2 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET);
-
+	//射击-摩擦轮，拨盘电机状态
 			RemoteShootControl(&switch1, rc->s1);
 
 }
 
+void BulletControlProcess(Remote_t *rc)
+{
+    if(GetWorkState()!=PREPARE_STATE)
+    {
+			ChassisSpeedRef.forward_back_ref = (rc->ch1 - 1024) / 66.0 * 1000;   //取弹模式下慢速移动
+			ChassisSpeedRef.left_right_ref = (rc->ch0 - 1024) / 66.0 * 1000;
+			ChassisSpeedRef.rotate_ref=  (rc->ch2 - 1024) /66.0*1000;
+			aux_motor34_position_target += (rc->ch3 - 1024)/10;
+		}
+		else
+		{
+			fw_printfln("prepare!");
+		}
 
+}
 
+//键盘鼠标控制模式处理
 
 void MouseKeyControlProcess(Mouse_t *mouse, Key_t *key)
 {
@@ -187,12 +194,12 @@ void MouseKeyControlProcess(Mouse_t *mouse, Key_t *key)
 	static uint16_t left_right_speed = 0;
 	if(GetWorkState()!=PREPARE_STATE)
 	{
-
+//		//有云台的设备用鼠标控制云台
 //		VAL_LIMIT(mouse->x, -150, 150); 
 //		VAL_LIMIT(mouse->y, -150, 150); 
 		pitchAngleTarget -= mouse->y* MOUSE_TO_PITCH_ANGLE_INC_FACT;  //(rc->ch3 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET) * STICK_TO_PITCH_ANGLE_INC_FACT;
 		yawAngleTarget    -= mouse->x* MOUSE_TO_YAW_ANGLE_INC_FACT;
-
+		//无云台的设备直接用鼠标控制rotate
 		VAL_LIMIT(mouse->x, -150, 150); 
 		VAL_LIMIT(mouse->y, -150, 150); 
 		//ChassisSpeedRef.rotate_ref = mouse->x/15.0*6000;
@@ -258,14 +265,14 @@ void MouseKeyControlProcess(Mouse_t *mouse, Key_t *key)
 	}
 	*/
 	/* not used to control, just as a flag */ 
-//    GimbalRef.pitch_speed_ref = mouse->y;    //
+//    GimbalRef.pitch_speed_ref = mouse->y;    //speed_ref仅做输入量判断用
 //    GimbalRef.yaw_speed_ref   = mouse->x;
 	  //MouseShootControl(mouse);
 	
 }
 
 
-// 
+// 设置输入模式
 void SetInputMode(Remote_t *rc)
 {
 	if(rc->s2 == 1)
@@ -278,7 +285,7 @@ void SetInputMode(Remote_t *rc)
 	}
 	else if(rc->s2 == 2)
 	{
-		inputmode = STOP;
+		inputmode = REMOTE_BULLET_INPUT;
 	}	
 }
 
@@ -287,22 +294,22 @@ void GetRemoteSwitchAction(RemoteSwitch_t *sw, uint8_t val)
 {
 	static uint32_t switch_cnt = 0;
 
-	/*  */
+	/* 最新状态值 */
 	sw->switch_value_raw = val;
 	sw->switch_value_buf[sw->buf_index] = sw->switch_value_raw;
 
-	/*  */
+	/* 取最新值和上一次值 */
 	sw->switch_value1 = (sw->switch_value_buf[sw->buf_last_index] << 2)|
 	(sw->switch_value_buf[sw->buf_index]);
 
 
-	/*  */
+	/* 最老的状态值的索引 */
 	sw->buf_end_index = (sw->buf_index + 1)%REMOTE_SWITCH_VALUE_BUF_DEEP;
 
-	/*  */
+	/* 合并三个值 */
 	sw->switch_value2 = (sw->switch_value_buf[sw->buf_end_index]<<4)|sw->switch_value1;	
 
-	/*  */
+	/* 长按判断 */
 	if(sw->switch_value_buf[sw->buf_index] == sw->switch_value_buf[sw->buf_last_index])
 	{
 		switch_cnt++;	
@@ -317,7 +324,7 @@ void GetRemoteSwitchAction(RemoteSwitch_t *sw, uint8_t val)
 		sw->switch_long_value = sw->switch_value_buf[sw->buf_index]; 	
 	}
 
-	//
+	//索引循环
 	sw->buf_last_index = sw->buf_index;
 	sw->buf_index++;		
 	if(sw->buf_index == REMOTE_SWITCH_VALUE_BUF_DEEP)
@@ -348,7 +355,7 @@ void RemoteShootControl(RemoteSwitch_t *sw, uint8_t val)
 	{
 		case FRICTION_WHEEL_OFF:
 		{
-			if(sw->switch_value1 == REMOTE_SWITCH_CHANGE_1TO3)   // turning
+			if(sw->switch_value1 == REMOTE_SWITCH_CHANGE_1TO3)   //从关闭到start turning
 			{
 				SetShootState(NOSHOOTING);
 				frictionRamp.ResetCounter(&frictionRamp);
@@ -358,7 +365,7 @@ void RemoteShootControl(RemoteSwitch_t *sw, uint8_t val)
 		}break;
 		case FRICTION_WHEEL_START_TURNNING:
 		{
-			if(sw->switch_value1 == REMOTE_SWITCH_CHANGE_3TO1)   //
+			if(sw->switch_value1 == REMOTE_SWITCH_CHANGE_3TO1)   //刚启动就被关闭
 			{
 				LASER_OFF();
 				SetShootState(NOSHOOTING);
@@ -379,7 +386,7 @@ void RemoteShootControl(RemoteSwitch_t *sw, uint8_t val)
 		}break;
 		case FRICTION_WHEEL_ON:
 		{
-			if(sw->switch_value1 == REMOTE_SWITCH_CHANGE_3TO1)   //
+			if(sw->switch_value1 == REMOTE_SWITCH_CHANGE_3TO1)   //关闭摩擦轮
 			{
 				LASER_OFF();
 				friction_wheel_state = FRICTION_WHEEL_OFF;				  
@@ -400,14 +407,83 @@ void RemoteShootControl(RemoteSwitch_t *sw, uint8_t val)
 	}
 }
 
-void MouseShootControl(Mouse_t *mouse)
+void BulletControl(RemoteSwitch_t *sw, uint8_t val) 
 {
-	int16_t closeDelayCount = 0;   //
+	GetRemoteSwitchAction(sw, val);
+	if(sw->switch_value1 == REMOTE_SWITCH_CHANGE_3TO2)
+	{
+		Hero_Order=HERO_GETBULLET;
+	}
+	if(sw->switch_value1 == REMOTE_SWITCH_CHANGE_2TO3)
+	{
+		Hero_Order=HERO_STOP;
+	}
+	/*
 	switch(friction_wheel_state)
 	{
 		case FRICTION_WHEEL_OFF:
 		{
-			if(mouse->last_press_r == 0 && mouse->press_r == 1)   // 
+			if(sw->switch_value1 == REMOTE_SWITCH_CHANGE_1TO3)   //从关闭到start turning
+			{
+				SetShootState(NOSHOOTING);
+				frictionRamp.ResetCounter(&frictionRamp);
+				friction_wheel_state = FRICTION_WHEEL_START_TURNNING;	 
+				LASER_ON(); 
+			}				 		
+		}break;
+		case FRICTION_WHEEL_START_TURNNING:
+		{
+			if(sw->switch_value1 == REMOTE_SWITCH_CHANGE_3TO1)   //刚启动就被关闭
+			{
+				LASER_OFF();
+				SetShootState(NOSHOOTING);
+				SetFrictionWheelSpeed(1000);
+				friction_wheel_state = FRICTION_WHEEL_OFF;
+				frictionRamp.ResetCounter(&frictionRamp);
+			}
+			else
+			{
+				SetFrictionWheelSpeed(1000 + (FRICTION_WHEEL_MAX_DUTY-1000)*frictionRamp.Calc(&frictionRamp)); 
+				SetFrictionWheelSpeed(FRICTION_WHEEL_MAX_DUTY);
+				if(frictionRamp.IsOverflow(&frictionRamp))
+				{
+					friction_wheel_state = FRICTION_WHEEL_ON; 	
+				}
+				friction_wheel_state = FRICTION_WHEEL_ON; 	
+			}
+		}break;
+		case FRICTION_WHEEL_ON:
+		{
+			if(sw->switch_value1 == REMOTE_SWITCH_CHANGE_3TO1)   //关闭摩擦轮
+			{
+				LASER_OFF();
+				friction_wheel_state = FRICTION_WHEEL_OFF;				  
+				SetFrictionWheelSpeed(1000); 
+				frictionRamp.ResetCounter(&frictionRamp);
+				SetShootState(NOSHOOTING);
+			}
+			else if(sw->switch_value1 == REMOTE_SWITCH_CHANGE_3TO2)
+			{
+				SetShootState(SHOOTING);
+				ShootOnce();
+			}
+			else
+			{
+				SetShootState(NOSHOOTING);
+			}					 
+		} break;				
+	}
+	*/
+}
+
+void MouseShootControl(Mouse_t *mouse)
+{
+	int16_t closeDelayCount = 0;   //右键关闭摩擦轮3s延时计数
+	switch(friction_wheel_state)
+	{
+		case FRICTION_WHEEL_OFF:
+		{
+			if(mouse->last_press_r == 0 && mouse->press_r == 1)   //从关闭到start turning
 			{
 				SetShootState(NOSHOOTING);
 				//frictionRamp.ResetCounter(&frictionRamp);
@@ -426,7 +502,7 @@ void MouseShootControl(Mouse_t *mouse)
 			{
 				closeDelayCount = 0;
 			}
-			if(closeDelayCount>50)   //
+			if(closeDelayCount>50)   //关闭摩擦轮
 			{
 				LASER_OFF();
 				friction_wheel_state = FRICTION_WHEEL_OFF;				  
@@ -436,7 +512,7 @@ void MouseShootControl(Mouse_t *mouse)
 			}
 			else
 			{
-				//				
+				//摩擦轮加速				
 //				SetFrictionWheelSpeed(1000 + (FRICTION_WHEEL_MAX_DUTY-1000)*frictionRamp.Calc(&frictionRamp)); 
 				SetFrictionWheelSpeed(FRICTION_WHEEL_MAX_DUTY);
 //				if(frictionRamp.IsOverflow(&frictionRamp))
@@ -458,7 +534,7 @@ void MouseShootControl(Mouse_t *mouse)
 				closeDelayCount = 0;
 			}
 			
-			if(closeDelayCount>50)   //
+			if(closeDelayCount>50)   //关闭摩擦轮
 			{
 				LASER_OFF();
 				friction_wheel_state = FRICTION_WHEEL_OFF;				  
@@ -466,7 +542,7 @@ void MouseShootControl(Mouse_t *mouse)
 				//frictionRamp.ResetCounter(&frictionRamp);
 				SetShootState(NOSHOOTING);
 			}			
-			else if(mouse->press_l== 1)  //
+			else if(mouse->press_l== 1)  //按下左键，射击
 			{
 				SetShootState(SHOOTING);				
 			}
@@ -558,7 +634,7 @@ void RemoteTaskInit(void)
 
 
 /**********************************************************
-*
+*工作状态切换状态机
 **********************************************************/
 static uint32_t time_tick_2ms = 0;
 void WorkStateFSM(void)
@@ -569,11 +645,12 @@ void WorkStateFSM(void)
 	{
 		case PREPARE_STATE:
 		{
-			if(GetInputMode() == STOP )//|| Is_Serious_Error())
-			{
-				workState = STOP_STATE;
-			}
-			else if(time_tick_2ms > PREPARE_TIME_TICK_MS)
+//			if(GetInputMode() == STOP )//|| Is_Serious_Error())
+//			{
+//				workState = STOP_STATE;
+//			}
+//			else 
+			if(time_tick_2ms > PREPARE_TIME_TICK_MS)
 			{
 				fw_printf("Normal state\r\n");
 				workState = NORMAL_STATE;
@@ -581,24 +658,24 @@ void WorkStateFSM(void)
 		}break;
 		case NORMAL_STATE:     
 		{
-			if(GetInputMode() == STOP )//|| Is_Serious_Error())
-			{
-				workState = STOP_STATE;
-					fw_printfln("Go to STOP STATE");
-			}
+//			if(GetInputMode() == STOP )//|| Is_Serious_Error())
+//			{
+//				workState = STOP_STATE;
+//					fw_printfln("Go to STOP STATE");
+//			}
 //			else if(!IsRemoteBeingAction()  && GetShootState() != SHOOTING) //||(Get_Lost_Error(LOST_ERROR_RC) == LOST_ERROR_RC
 //			{
-//				fw_printfln("");
+//				fw_printfln("进入STANDBY");
 //				workState = STANDBY_STATE;      
 //			}
 		}break;
 		case STANDBY_STATE:  
 		{
-			if(GetInputMode() == STOP )//|| Is_Serious_Error())
-			{
-				workState = STOP_STATE;
-				fw_printfln("Go to STOP STATE");
-			}
+//			if(GetInputMode() == STOP )//|| Is_Serious_Error())
+//			{
+//				workState = STOP_STATE;
+//				fw_printfln("Go to STOP STATE");
+//			}
 //			else if(IsRemoteBeingAction() || (GetShootState()==SHOOTING) || GetFrictionState() == FRICTION_WHEEL_START_TURNNING)
 //			{
 //				workState = NORMAL_STATE;
@@ -606,11 +683,11 @@ void WorkStateFSM(void)
 		}break;
 		case STOP_STATE:   
 		{
-			if(GetInputMode() != STOP )//&& !Is_Serious_Error())
-			{
-				workState = PREPARE_STATE;  
-				fw_printfln("Go to Prepare STATE");				
-			}
+//			if(GetInputMode() != STOP )//&& !Is_Serious_Error())
+//			{
+//				workState = PREPARE_STATE;  
+//				fw_printfln("Go to Prepare STATE");				
+//			}
 		}break;
 		default:
 		{
@@ -620,7 +697,7 @@ void WorkStateFSM(void)
 }
 void WorkStateSwitchProcess(void)
 {
-	//
+	//如果从其他模式切换到prapare模式，要将一系列参数初始化
 	if((lastWorkState != workState) && (workState == PREPARE_STATE))  
 	{
 		//CMControtLoopTaskInit();
