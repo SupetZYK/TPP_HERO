@@ -369,13 +369,13 @@ void RemoteShootControl(RemoteSwitch_t *sw, uint8_t val)
 			{
 				LASER_OFF();
 				SetShootState(NOSHOOTING);
-				SetFrictionWheelSpeed(1000);
+				SetFrictionWheelSpeed(800);
 				friction_wheel_state = FRICTION_WHEEL_OFF;
 				frictionRamp.ResetCounter(&frictionRamp);
 			}
 			else
 			{
-				SetFrictionWheelSpeed(1000 + (FRICTION_WHEEL_MAX_DUTY-1000)*frictionRamp.Calc(&frictionRamp)); 
+				SetFrictionWheelSpeed(800 + (FRICTION_WHEEL_MAX_DUTY-800)*frictionRamp.Calc(&frictionRamp)); 
 				SetFrictionWheelSpeed(FRICTION_WHEEL_MAX_DUTY);
 				if(frictionRamp.IsOverflow(&frictionRamp))
 				{
@@ -390,7 +390,7 @@ void RemoteShootControl(RemoteSwitch_t *sw, uint8_t val)
 			{
 				LASER_OFF();
 				friction_wheel_state = FRICTION_WHEEL_OFF;				  
-				SetFrictionWheelSpeed(1000); 
+				SetFrictionWheelSpeed(800); 
 				frictionRamp.ResetCounter(&frictionRamp);
 				SetShootState(NOSHOOTING);
 			}
@@ -506,7 +506,7 @@ void MouseShootControl(Mouse_t *mouse)
 			{
 				LASER_OFF();
 				friction_wheel_state = FRICTION_WHEEL_OFF;				  
-				SetFrictionWheelSpeed(1000); 
+				SetFrictionWheelSpeed(800); 
 				//frictionRamp.ResetCounter(&frictionRamp);
 				SetShootState(NOSHOOTING);
 			}
@@ -538,7 +538,7 @@ void MouseShootControl(Mouse_t *mouse)
 			{
 				LASER_OFF();
 				friction_wheel_state = FRICTION_WHEEL_OFF;				  
-				SetFrictionWheelSpeed(1000); 
+				SetFrictionWheelSpeed(800); 
 				//frictionRamp.ResetCounter(&frictionRamp);
 				SetShootState(NOSHOOTING);
 			}			
