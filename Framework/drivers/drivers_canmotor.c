@@ -313,29 +313,35 @@ void CMGMCanTransmitTask(void const * argument){
 			osSemaphoreWait(CMGMCanTransmitSemaphoreHandle, osWaitForever);
 			IOPool_getNextRead(CMTxIOPool, 0);
 			CMGMMOTOR_CAN.pTxMsg = IOPool_pGetReadData(CMTxIOPool, 0);
+			//taskENTER_CRITICAL();
 			if(HAL_CAN_Transmit_IT(&CMGMMOTOR_CAN) != HAL_OK){
 				fw_Warning();
 				osSemaphoreRelease(CMGMCanTransmitSemaphoreHandle);
 			}
+			//taskEXIT_CRITICAL();
 		}
 		if(IOPool_hasNextRead(GMTxIOPool, 0)){
 			osSemaphoreWait(CMGMCanTransmitSemaphoreHandle, osWaitForever);
 			IOPool_getNextRead(GMTxIOPool, 0);
 			CMGMMOTOR_CAN.pTxMsg = IOPool_pGetReadData(GMTxIOPool, 0);
+			taskENTER_CRITICAL();
 			if(HAL_CAN_Transmit_IT(&CMGMMOTOR_CAN) != HAL_OK){
 				fw_Warning();
 				osSemaphoreRelease(CMGMCanTransmitSemaphoreHandle);
 			}
+			taskEXIT_CRITICAL();
 		}
 		if(isRcanStarted_CMGM == 0){
 				if(CMGMMOTOR_CAN.State == HAL_CAN_STATE_BUSY_RX){
 					CMGMMOTOR_CAN.State = HAL_CAN_STATE_READY;
 				}
+				//taskENTER_CRITICAL();
 				if(HAL_CAN_Receive_IT(&CMGMMOTOR_CAN, CAN_FIFO0) != HAL_OK){
 					fw_Warning();
 				}else{
 					isRcanStarted_CMGM = 1;
 				}
+				//taskEXIT_CRITICAL();
 			}
 	}
 }

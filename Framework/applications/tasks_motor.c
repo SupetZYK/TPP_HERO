@@ -42,16 +42,18 @@ void CMGMControlTask(void const * argument){
 //		 ChassisSpeedRef.left_right_ref=0;
 //		 ChassisSpeedRef.rotate_ref=0;
 //	 }
+		static int32_t cnt=0;
 	 if(GM_RUN)
 	 {
 		 MINMAX(yawAngleTarget, YAWDOWNLIMIT, YAWUPLIMIT);
 		 MINMAX(pitchAngleTarget, PITCHDOWNLIMIT, PITCHUPLIMIT);
+		 setYawWithAngle(yawAngleTarget);
 		 setPitchWithAngle(pitchAngleTarget);
-		setYawWithAngle(yawAngleTarget);
 	 }
-
-	setChassisWithSpeed(ChassisSpeedRef.forward_back_ref, ChassisSpeedRef.left_right_ref, ChassisSpeedRef.rotate_ref);
-		
+	if(cnt++>5){
+		setChassisWithSpeed(ChassisSpeedRef.forward_back_ref, ChassisSpeedRef.left_right_ref, ChassisSpeedRef.rotate_ref);
+		cnt=0;
+	}
 	}
 }
 

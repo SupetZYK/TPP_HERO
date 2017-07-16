@@ -68,10 +68,12 @@ void setMotor(MotorId motorId, int16_t Intensity){
 			CMBRIntensity = CMBR_DIR * Intensity;break;
 		
 		case GMYAW:
-			if(GMReady & 0x1){GMReady = 0x3;}else{GMReady |= 0x1;}
+			//if(GMReady & 0x1){GMReady = 0x3;}else{GMReady |= 0x1;}
+			GMReady|=0x1;
 			GMYAWIntensity = GMYAW_DIR * Intensity;break;
 		case GMPITCH:
-			if(GMReady & 0x2){GMReady = 0x3;}else{GMReady |= 0x2;}
+			//if(GMReady & 0x2){GMReady = 0x3;}else{GMReady |= 0x2;}
+			GMReady|=0x2;
 			GMPITCHIntensity = GMPITCH_DIR * Intensity;break;
 			
 		case AM1UDFL:
