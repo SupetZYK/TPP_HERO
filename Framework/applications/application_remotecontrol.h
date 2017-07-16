@@ -12,7 +12,7 @@
 #define LASER_ON()  HAL_GPIO_WritePin(LASER_GPIO_Port, LASER_Pin,GPIO_PIN_SET)
 #define LASER_OFF()  HAL_GPIO_WritePin(LASER_GPIO_Port, LASER_Pin,GPIO_PIN_RESET)
 //Ä¦²ÁÂÖ
-#define FRICTION_WHEEL_MAX_DUTY             1600
+#define FRICTION_WHEEL_MAX_DUTY             1180
 #define FRICTION_RAMP_TICK_COUNT			100
 //mouse control parameters
 #define MOUSE_TO_PITCH_ANGLE_INC_FACT 		0.025f * 3
