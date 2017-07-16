@@ -23,7 +23,7 @@ int16_t PitchZeroEncoderBias=8140;
 float yawRealAngle=0;
 float pitchRealAngle=0;
 extern IMUDataTypedef imu_data;
-
+//
 void setYawWithAngle(float targetAngle){
 	if(IOPool_hasNextRead(GMYAWRxIOPool, 0)){
 		//TargetAngle
