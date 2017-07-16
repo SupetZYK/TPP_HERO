@@ -50,7 +50,7 @@ extern PID_Regulator_t CMFLSpeedPID,CMFRSpeedPID,CMBLSpeedPID,CMBRSpeedPID;
 extern PID_Regulator_t yawPositionPID,yawSpeedPID,pitchPositionPID,pitchSpeedPID;
 extern IMUDataTypedef imu_data;
 extern float pitchRealAngle,yawRealAngle;
-
+extern float yawRealSpeed;
 extern double aux_motor34_position_target;
 void zykProcessData()
 {	
@@ -265,8 +265,8 @@ void zykProcessData()
 		///////////////////UPPER
 		else if(strcmp(buf,"RD1")==0)
 		{
-			float realSpeed2=imu_data.gz/32.8;
-			fw_printf("#DATA%.2f@%.2f@%.2f$",yawPositionPID.output,realSpeed2,yawRealAngle);
+			//float realSpeed2=imu_data.gz/32.8;
+			fw_printf("#DATA%.2f@%.2f@%.2f$",yawPositionPID.output,yawRealSpeed,yawRealAngle);
 //			if(print_data==1)
 //			{
 //				print_data=0;
@@ -340,5 +340,4 @@ void wave_task(void const * argument){
 		}
 		osDelay(20);
 	}
-
 }
