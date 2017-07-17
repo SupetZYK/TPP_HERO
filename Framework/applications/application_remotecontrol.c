@@ -475,7 +475,7 @@ void BulletControl(RemoteSwitch_t *sw, uint8_t val)
 
 void MouseShootControl(Mouse_t *mouse)
 {
-	int16_t closeDelayCount = 0;   //右键关闭摩擦轮3s延时计数
+	static int16_t closeDelayCount = 0;   //右键关闭摩擦轮3s延时计数
 	switch(friction_wheel_state)
 	{
 		case FRICTION_WHEEL_OFF:
