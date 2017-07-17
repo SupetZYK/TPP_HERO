@@ -43,14 +43,14 @@ void CMGMControlTask(void const * argument){
 //		 ChassisSpeedRef.rotate_ref=0;
 //	 }
 		static int32_t cnt=0;
-	 if(GM_RUN)
-	 {
+//	 if(GM_RUN)
+//	 {
 		 MINMAX(yawAngleTarget, YAWDOWNLIMIT, YAWUPLIMIT);
 		 MINMAX(pitchAngleTarget, PITCHDOWNLIMIT, PITCHUPLIMIT);
 		 setYawWithAngle(yawAngleTarget);
 		 setPitchWithAngle(pitchAngleTarget);
-	 }
-	if(cnt++>5){
+//	 }
+	if(cnt++>3){
 		setChassisWithSpeed(ChassisSpeedRef.forward_back_ref, ChassisSpeedRef.left_right_ref, ChassisSpeedRef.rotate_ref);
 		cnt=0;
 	}
@@ -77,7 +77,7 @@ double getBullet_angle_target=0;//aux6
 double getBullet_zero_angle=0;
 
 double aux34_limit = 36000;
-double getBullet_limit=20000;
+double getBullet_limit=25000;
 uint8_t aux_run=0;
 void AMControlTask(void const * argument){
 	while(1){

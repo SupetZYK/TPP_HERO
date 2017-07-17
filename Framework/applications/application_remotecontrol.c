@@ -132,9 +132,6 @@ void RemoteControlProcess(Remote_t *rc)
 {
     if(GetWorkState()!=PREPARE_STATE)
     {
-			//执行engineering task
-				if(rc->s2==1)
-				{
 					ChassisSpeedRef.forward_back_ref = (rc->ch1 - 1024) / 66.0 * 4000;
 					ChassisSpeedRef.left_right_ref = (rc->ch0 - 1024) / 66.0 * 4000;
 					ChassisSpeedRef.rotate_ref=  (rc->ch2 - 1024) /66.0*4000;
@@ -143,9 +140,8 @@ void RemoteControlProcess(Remote_t *rc)
 //					aux2_targetSpeed=aux1_targetSpeed;
 //					aux1_targetSpeed=(-(rc->ch1 - 1024) - (rc->ch2-1024) ) /66.0*5000;
 //					aux2_targetSpeed=(+rc->ch1 - 1024 - (rc->ch2-1024) ) /66.0*5000;
-				}
 //			if(GetShootMode() == MANUL){  
-//				pitchAngleTarget += (rc->ch3 - 1024)/660.0 * (YAWUPLIMIT-YAWDOWNLIMIT);
+				pitchAngleTarget += (rc->ch3 - 1024)/6600.0 * (PITCHUPLIMIT-PITCHDOWNLIMIT);
 //				yawAngleTarget   -= (rc->ch2 - 1024)/660.0 * (PITCHUPLIMIT-PITCHDOWNLIMIT); 
 //			}
 		}
@@ -167,7 +163,7 @@ void RemoteControlProcess(Remote_t *rc)
 //    GimbalRef.pitch_speed_ref = rc->ch3 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET;    //speed_ref仅做输入量判断用
 //    GimbalRef.yaw_speed_ref   = (rc->ch2 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET);
 	//射击-摩擦轮，拨盘电机状态
-			RemoteShootControl(&switch1, rc->s1);
+	RemoteShootControl(&switch1, rc->s1);
 
 }
 
@@ -175,8 +171,8 @@ void BulletControlProcess(Remote_t *rc)
 {
     if(GetWorkState()!=PREPARE_STATE)
     {
-			ChassisSpeedRef.forward_back_ref = (rc->ch1 - 1024) / 66.0 * 1000;   //取弹模式下慢速移动
-			ChassisSpeedRef.left_right_ref = (rc->ch0 - 1024) / 66.0 * 1000;
+			ChassisSpeedRef.forward_back_ref = (rc->ch1 - 1024) / 66.0 * 2000;   //取弹模式下慢速移动
+			ChassisSpeedRef.left_right_ref = (rc->ch0 - 1024) / 66.0 * 2000;
 			ChassisSpeedRef.rotate_ref=  (rc->ch2 - 1024) /66.0*1000;
 			aux_motor34_position_target += (rc->ch3 - 1024)/10;
 		}
@@ -199,12 +195,12 @@ void MouseKeyControlProcess(Mouse_t *mouse, Key_t *key)
 //		VAL_LIMIT(mouse->x, -150, 150); 
 //		VAL_LIMIT(mouse->y, -150, 150); 
 		pitchAngleTarget -= mouse->y* MOUSE_TO_PITCH_ANGLE_INC_FACT;  //(rc->ch3 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET) * STICK_TO_PITCH_ANGLE_INC_FACT;
-		yawAngleTarget    -= mouse->x* MOUSE_TO_YAW_ANGLE_INC_FACT;
+		//yawAngleTarget    -= mouse->x* MOUSE_TO_YAW_ANGLE_INC_FACT;
 		//无云台的设备直接用鼠标控制rotate
 		VAL_LIMIT(mouse->x, -150, 150); 
 		VAL_LIMIT(mouse->y, -150, 150); 
-		//ChassisSpeedRef.rotate_ref = mouse->x/15.0*6000;
-		
+		ChassisSpeedRef.rotate_ref = mouse->x/15.0*6000;
+		yawAngleTarget = -ChassisSpeedRef.rotate_ref * forward_kp / 2000;
 		//speed mode: normal speed/high speed
 		if(key->v & 0x10)
 		{
@@ -268,7 +264,7 @@ void MouseKeyControlProcess(Mouse_t *mouse, Key_t *key)
 	/* not used to control, just as a flag */ 
 //    GimbalRef.pitch_speed_ref = mouse->y;    //speed_ref仅做输入量判断用
 //    GimbalRef.yaw_speed_ref   = mouse->x;
-	  //MouseShootControl(mouse);
+	  MouseShootControl(mouse);
 	
 }
 
@@ -487,7 +483,7 @@ void MouseShootControl(Mouse_t *mouse)
 			if(mouse->last_press_r == 0 && mouse->press_r == 1)   //从关闭到start turning
 			{
 				SetShootState(NOSHOOTING);
-				//frictionRamp.ResetCounter(&frictionRamp);
+				frictionRamp.ResetCounter(&frictionRamp);
 				friction_wheel_state = FRICTION_WHEEL_START_TURNNING;	 
 				LASER_ON(); 
 				closeDelayCount = 0;
@@ -508,18 +504,18 @@ void MouseShootControl(Mouse_t *mouse)
 				LASER_OFF();
 				friction_wheel_state = FRICTION_WHEEL_OFF;				  
 				SetFrictionWheelSpeed(800); 
-				//frictionRamp.ResetCounter(&frictionRamp);
+				frictionRamp.ResetCounter(&frictionRamp);
 				SetShootState(NOSHOOTING);
 			}
 			else
 			{
 				//摩擦轮加速				
-//				SetFrictionWheelSpeed(1000 + (FRICTION_WHEEL_MAX_DUTY-1000)*frictionRamp.Calc(&frictionRamp)); 
+				SetFrictionWheelSpeed(800 + (FRICTION_WHEEL_MAX_DUTY-800)*frictionRamp.Calc(&frictionRamp)); 
 				SetFrictionWheelSpeed(FRICTION_WHEEL_MAX_DUTY);
-//				if(frictionRamp.IsOverflow(&frictionRamp))
-//				{
-//					friction_wheel_state = FRICTION_WHEEL_ON; 	
-//				}
+				if(frictionRamp.IsOverflow(&frictionRamp))
+				{
+					friction_wheel_state = FRICTION_WHEEL_ON; 	
+				}
 				friction_wheel_state = FRICTION_WHEEL_ON; 
 				
 			}
@@ -540,12 +536,13 @@ void MouseShootControl(Mouse_t *mouse)
 				LASER_OFF();
 				friction_wheel_state = FRICTION_WHEEL_OFF;				  
 				SetFrictionWheelSpeed(800); 
-				//frictionRamp.ResetCounter(&frictionRamp);
+				frictionRamp.ResetCounter(&frictionRamp);
 				SetShootState(NOSHOOTING);
 			}			
 			else if(mouse->press_l== 1)  //按下左键，射击
 			{
-				SetShootState(SHOOTING);				
+				SetShootState(SHOOTING);		
+				ShootOnce();
 			}
 			else
 			{
