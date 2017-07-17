@@ -12,7 +12,7 @@ PID_Regulator_t yawPositionPID = PID_INIT(8.0, 0.0, 0.5, 10000.0, 10000.0, 10000
 PID_Regulator_t yawSpeedPID = PID_INIT(80.0, 0.0, 5.0, 10000.0, 10000.0, 10000.0, 4900.0);
 
 PID_Regulator_t pitchPositionPID = PID_INIT(8.0, 0.00, 0.5, 10000.0, 10000.0, 10000.0, 10000.0);
-PID_Regulator_t pitchSpeedPID = PID_INIT(50.0, 0.0, 5.0, 10000.0, 10000.0, 10000.0, 4900.0);
+PID_Regulator_t pitchSpeedPID = PID_INIT(40.0, 0.0, 5.0, 10000.0, 10000.0, 10000.0, 4900.0);
 
 //PID_Regulator_t pitchPositionPID = PID_INIT(5.0, 0.0, 0.0, 1000000.0, 1000000.0, 1000000.0, 100000.0);
 //PID_Regulator_t pitchSpeedPID = PID_INIT(1.0, 0.0, 0.0, 10000.0, 10000.0, 10000.0, 4900.0);
@@ -36,6 +36,7 @@ void setYawWithAngle(float targetAngle){
 		IOPool_getNextRead(GMYAWRxIOPool, 0); 
 		yawRealAngle = (IOPool_pGetReadData(GMYAWRxIOPool, 0)->angle - YawZeroEncoderBias) * 360 / 8192.0;
 		NORMALIZE_ANGLE180(yawRealAngle);
+		
 //		yawSpeedbuf[cnt++]=yawRealAngle-last_angle;
 //		if(cnt>=6) cnt=0;
 //		last_angle=yawRealAngle;

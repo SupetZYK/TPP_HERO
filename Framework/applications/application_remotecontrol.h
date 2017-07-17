@@ -144,4 +144,6 @@ void StopBulletFrictionWheel();
 void BulletControl(RemoteSwitch_t *sw, uint8_t val);
 void BulletControlProcess(Remote_t *rc);
 void GetRemoteSwitchAction(RemoteSwitch_t *sw, uint8_t val);
+
+extern float forward_kp;
 #endif

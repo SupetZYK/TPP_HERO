@@ -127,7 +127,7 @@ void Timer_1ms_lTask(void const * argument)
 
 //////////////////////////////遥控器控制模式处理
 extern uint8_t engineer_task_on;
-
+float forward_kp = 1.0 ;
 void RemoteControlProcess(Remote_t *rc)
 {
     if(GetWorkState()!=PREPARE_STATE)
@@ -138,6 +138,7 @@ void RemoteControlProcess(Remote_t *rc)
 					ChassisSpeedRef.forward_back_ref = (rc->ch1 - 1024) / 66.0 * 4000;
 					ChassisSpeedRef.left_right_ref = (rc->ch0 - 1024) / 66.0 * 4000;
 					ChassisSpeedRef.rotate_ref=  (rc->ch2 - 1024) /66.0*4000;
+					yawAngleTarget = -ChassisSpeedRef.rotate_ref * forward_kp / 2000;
 //					aux1_targetSpeed=(rc->ch3 - 1024) /66.0*3000;
 //					aux2_targetSpeed=aux1_targetSpeed;
 //					aux1_targetSpeed=(-(rc->ch1 - 1024) - (rc->ch2-1024) ) /66.0*5000;
