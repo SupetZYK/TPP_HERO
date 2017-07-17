@@ -50,10 +50,10 @@ void CMGMControlTask(void const * argument){
 		 setYawWithAngle(yawAngleTarget);
 		 setPitchWithAngle(pitchAngleTarget);
 //	 }
-	if(cnt++>3){
+//	if(cnt++>1){
 		setChassisWithSpeed(ChassisSpeedRef.forward_back_ref, ChassisSpeedRef.left_right_ref, ChassisSpeedRef.rotate_ref);
 		cnt=0;
-	}
+//	}
 	}
 }
 
