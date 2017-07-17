@@ -186,6 +186,12 @@ void zykProcessData()
 			pitchSpeedPID.kd=p;
 			fw_printf("Pitch speed D change to %f\r\n",pitchSpeedPID.kd);
 		}
+		else if(ComProtocal(buf,"#GMFP","$","@",data))
+		{
+			float p=atof(data[0]);
+			forward_kp=p;
+			fw_printf("forward_kp change to %f\r\n",forward_kp);
+		}
 		/////////// CM INFO ////////////////
 		else if(strcmp(buf,"CM")==0)
 		{
