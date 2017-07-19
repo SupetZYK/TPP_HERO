@@ -255,9 +255,69 @@ void MouseKeyControlProcess(Mouse_t *mouse, Key_t *key)
 			ChassisSpeedRef.rotate_ref = mouse->x/15.0*6000;
 			yawAngleTarget = -ChassisSpeedRef.rotate_ref * forward_kp / 2000;
 			pitchAngleTarget -= mouse->y* MOUSE_TO_PITCH_ANGLE_INC_FACT; 
+			//----------------发射控制
+			MouseShootControl(mouse);
 		}
-		
-	  MouseShootControl(mouse);
+		else if (hero_mode == GETTING_BULLET)
+		{
+			//----------------取弹时慢速移动控制
+			forward_back_speed=LOW_FORWARD_BACK_SPEED;
+			left_right_speed=LOW_LEFT_RIGHT_SPEED;
+			rotate_speed = LOW_LEFT_RIGHT_SPEED;
+			if(key->v & 0x01)  // key: w
+			{
+				ChassisSpeedRef.forward_back_ref = forward_back_speed/66.0 * 4000;
+			}
+			else if(key->v & 0x02) //key: s
+			{
+				ChassisSpeedRef.forward_back_ref = -forward_back_speed/66.0 *4000;
+			}
+			else
+			{
+				ChassisSpeedRef.forward_back_ref = 0;
+			}
+			
+			if(key->v & 0x04)  // key: d
+			{
+				ChassisSpeedRef.left_right_ref = -left_right_speed/66.0*4000;
+			}
+			else if(key->v & 0x08) //key: a
+			{
+				ChassisSpeedRef.left_right_ref = left_right_speed/66.0*4000;
+			}
+			else
+			{
+				ChassisSpeedRef.left_right_ref = 0;
+			}
+			//-------------------------------取弹时慢速旋转
+			VAL_LIMIT(mouse->x, -150, 150); 
+			VAL_LIMIT(mouse->y, -150, 150); 
+			ChassisSpeedRef.rotate_ref = mouse->x/15.0*2000;
+			yawAngleTarget = -ChassisSpeedRef.rotate_ref * forward_kp / 2000;
+			pitchAngleTarget -= mouse->y* MOUSE_TO_PITCH_ANGLE_INC_FACT/3;
+			//-------------------------------取弹时小范围升降
+			if(((key->v & 0x0020)>>5) && ((key->v & 0x0001)>>0))   //ctrl+W 升
+			{
+				aux_motor34_position_target += LIFT_SPEED;                  //升降
+				MINMAX(aux_motor34_position_target,aux34_limit-5000,aux34_limit);
+			}
+			else if (((key->v & 0x0002)>>1) && ((key->v & 0x0020)>>5)) //ctrl+W 降
+			{
+				aux_motor34_position_target -= LIFT_SPEED;                  //升降
+				MINMAX(aux_motor34_position_target,aux34_limit-5000,aux34_limit);
+			}
+			//-------------------------------取弹时小范围伸出
+			if(((key->v & 0x0020)>>5) && ((key->v & 0x4000)>>14) ) //ctrl+V
+			{
+				getBullet_angle_target += STRETCH_SPEED;            //伸出
+				MINMAX(getBullet_angle_target,getBullet_limit-12000,getBullet_limit);
+			}
+			else if ((key->v & 0x4000)>>14)   //V
+			{
+				getBullet_angle_target -= STRETCH_SPEED;            //伸出
+				MINMAX(getBullet_angle_target,getBullet_limit-12000,getBullet_limit);
+			}
+		}
 	}
 }
 

@@ -41,6 +41,9 @@
 #define REMOTE_SWITCH_CHANGE_2TO3TO1   (uint8_t)((REMOTE_SWITCH_VALUE_DOWN << 4) |\
                                                  (REMOTE_SWITCH_VALUE_CENTRAL << 2) |\
                                                  (REMOTE_SWITCH_VALUE_UP)) 
+																								 
+#define LIFT_SPEED 200
+#define STRETCH_SPEED 200
 //准备时间																								 
 #define PREPARE_TIME_TICK_MS 250      //prapare time in ms*2
 //输入模式:遥控器/键盘鼠标/停止运行
