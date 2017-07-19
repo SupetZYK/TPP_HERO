@@ -113,6 +113,12 @@ typedef enum
 	FROM3TO2,
 }RC_SWITCH_ACTION_e;
 
+typedef enum
+{
+	FIGHTING = 1,
+	GETTING_BULLET=2,
+}Hero_Mode;
+
 WorkState_e GetWorkState(void);
 
 void SetInputMode(Remote_t *rc);

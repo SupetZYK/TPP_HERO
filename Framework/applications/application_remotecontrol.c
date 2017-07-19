@@ -55,7 +55,7 @@ static RemoteSwitch_t switch2;
 //射击状态
 volatile Shoot_State_e shootState = NOSHOOTING;
 ///////////////////////////////////////////////////////
-
+Hero_Mode hero_mode = FIGHTING;
 
 
 void RCProcess(RC_CtrlData_t* pRC_CtrlData){
@@ -173,84 +173,93 @@ void MouseKeyControlProcess(Mouse_t *mouse, Key_t *key)
 {
 	static uint16_t forward_back_speed = 0;
 	static uint16_t left_right_speed = 0;
+	static uint16_t rotate_speed = 0;
 	if(GetWorkState()!=PREPARE_STATE)
 	{
-//		//有云台的设备用鼠标控制云台
-//		VAL_LIMIT(mouse->x, -150, 150); 
-//		VAL_LIMIT(mouse->y, -150, 150); 
-		pitchAngleTarget -= mouse->y* MOUSE_TO_PITCH_ANGLE_INC_FACT;  //(rc->ch3 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET) * STICK_TO_PITCH_ANGLE_INC_FACT;
-		//yawAngleTarget    -= mouse->x* MOUSE_TO_YAW_ANGLE_INC_FACT;
-		//无云台的设备直接用鼠标控制rotate
-		VAL_LIMIT(mouse->x, -150, 150); 
-		VAL_LIMIT(mouse->y, -150, 150); 
-		ChassisSpeedRef.rotate_ref = mouse->x/15.0*6000;
-		yawAngleTarget = -ChassisSpeedRef.rotate_ref * forward_kp / 2000;
-		//speed mode: normal speed/high speed
-		if(key->v & 0x10)
+		if( ((key->v & 0x0020)>>5) && ((key->v & 0x0040)>>6) )  // CTRL+Q，切换普通模式
 		{
-			forward_back_speed =  HIGH_FORWARD_BACK_SPEED;
-			left_right_speed = HIGH_LEFT_RIGHT_SPEED;
+			hero_mode = FIGHTING;
+			Hero_Order=HERO_STOP;
 		}
-		else if(key->v & 0x20)
+		if( ((key->v & 0x0020)>>5) && ((key->v & 0x0100)>>8) )  // CTRL+R，切换登岛模式
 		{
-			forward_back_speed=LOW_FORWARD_BACK_SPEED;
-			left_right_speed=LOW_LEFT_RIGHT_SPEED;
+			hero_mode = GETTING_BULLET;
+			Hero_Order=HERO_GETBULLET;
 		}
-		else
+
+		if(hero_mode == FIGHTING)
 		{
-			forward_back_speed =  NORMAL_FORWARD_BACK_SPEED;
-			left_right_speed = NORMAL_LEFT_RIGHT_SPEED;
-		}
-		//movement process
-		if(key->v & 0x01)  // key: w
-		{
-//			ChassisSpeedRef.forward_back_ref = forward_back_speed* FBSpeedRamp.Calc(&FBSpeedRamp);
-			ChassisSpeedRef.forward_back_ref = forward_back_speed/66.0 * 4000;
-		}
-		else if(key->v & 0x02) //key: s
-		{
-//			ChassisSpeedRef.forward_back_ref = -forward_back_speed* FBSpeedRamp.Calc(&FBSpeedRamp);
-			ChassisSpeedRef.forward_back_ref = -forward_back_speed/66.0 *4000;
-		}
-		else
-		{
-			ChassisSpeedRef.forward_back_ref = 0;
-			//FBSpeedRamp.ResetCounter(&FBSpeedRamp);
-		}
-		if(key->v & 0x04)  // key: d
-		{
-//			ChassisSpeedRef.left_right_ref = -left_right_speed* LRSpeedRamp.Calc(&LRSpeedRamp);
-			ChassisSpeedRef.left_right_ref = -left_right_speed/66.0*4000;
-		}
-		else if(key->v & 0x08) //key: a
-		{
-//			ChassisSpeedRef.left_right_ref = left_right_speed* LRSpeedRamp.Calc(&LRSpeedRamp);
+			//----------------移动控制
+			//speed mode: normal speed/high speed
+			if( (key->v & 0x0020)>>5 )
+			{
+				forward_back_speed =  HIGH_FORWARD_BACK_SPEED;
+				left_right_speed = HIGH_LEFT_RIGHT_SPEED;
+				rotate_speed = HIGH_LEFT_RIGHT_SPEED;
+			}
+			else if((key->v & 0x0010)>>4)
+			{
+				forward_back_speed=LOW_FORWARD_BACK_SPEED;
+				left_right_speed=LOW_LEFT_RIGHT_SPEED;
+				rotate_speed = LOW_LEFT_RIGHT_SPEED;
+			}
+			else
+			{
+				forward_back_speed =  NORMAL_FORWARD_BACK_SPEED;
+				left_right_speed = NORMAL_LEFT_RIGHT_SPEED;
+				rotate_speed = NORMAL_LEFT_RIGHT_SPEED;
+			}
+			//movement process
+			if(key->v & 0x01)  // key: w
+			{
+				ChassisSpeedRef.forward_back_ref = forward_back_speed/66.0 * 4000;
+			}
+			else if(key->v & 0x02) //key: s
+			{
+				ChassisSpeedRef.forward_back_ref = -forward_back_speed/66.0 *4000;
+			}
+			else
+			{
+				ChassisSpeedRef.forward_back_ref = 0;
+			}
+			
+			if(key->v & 0x04)  // key: d
+			{
+				ChassisSpeedRef.left_right_ref = -left_right_speed/66.0*4000;
+			}
+			else if(key->v & 0x08) //key: a
+			{
 				ChassisSpeedRef.left_right_ref = left_right_speed/66.0*4000;
+			}
+			else
+			{
+				ChassisSpeedRef.left_right_ref = 0;
+			}
+			
+			if( (key->v & 0x0040)>>6 )  // key: Q    
+			{
+				ChassisSpeedRef.rotate_ref = -rotate_speed/66.0*4000;
+			}
+			else if( (key->v & 0x0080)>>7 ) //key: E
+			{
+				ChassisSpeedRef.rotate_ref = rotate_speed/66.0*4000;
+			}
+			else
+			{
+				ChassisSpeedRef.rotate_ref = 0 ;
+			}
+			
+			//----------------云台控制
+			VAL_LIMIT(mouse->x, -150, 150); 
+			VAL_LIMIT(mouse->y, -150, 150); 
+			ChassisSpeedRef.rotate_ref = mouse->x/15.0*6000;
+			yawAngleTarget = -ChassisSpeedRef.rotate_ref * forward_kp / 2000;
+			pitchAngleTarget -= mouse->y* MOUSE_TO_PITCH_ANGLE_INC_FACT; 
 		}
-		else
-		{
-			ChassisSpeedRef.left_right_ref = 0;
-			//LRSpeedRamp.ResetCounter(&LRSpeedRamp);
-		}
-
-	}
-	//step2: gimbal ref calc
- /*   if(GetWorkState() == NORMAL_STATE)
-    {
-		VAL_LIMIT(mouse->x, -150, 150); 
-		VAL_LIMIT(mouse->y, -150, 150); 
 		
-        pitchAngleTarget -= mouse->y* MOUSE_TO_PITCH_ANGLE_INC_FACT;  //(rc->ch3 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET) * STICK_TO_PITCH_ANGLE_INC_FACT;
-        yawAngleTarget    -= mouse->x* MOUSE_TO_YAW_ANGLE_INC_FACT;
-
-	}
-	*/
-	/* not used to control, just as a flag */ 
-//    GimbalRef.pitch_speed_ref = mouse->y;    //speed_ref仅做输入量判断用
-//    GimbalRef.yaw_speed_ref   = mouse->x;
 	  MouseShootControl(mouse);
+	}
 }
-
 
 // 设置输入模式
 void SetInputMode(Remote_t *rc)
@@ -535,11 +544,6 @@ void MouseShootControl(Mouse_t *mouse)
 	}	
 	mouse->last_press_r = mouse->press_r;
 }
-
-
-
-
-
 
 Shoot_State_e GetShootState()
 {
