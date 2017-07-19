@@ -14,6 +14,7 @@
 #include "tim.h"
 #include "tasks_Hero.h"
 #include "tasks_motor.h"
+#include "utilities_minmax.h"
 #define VAL_LIMIT(val, min, max)\
 if(val<=min)\
 {\
@@ -175,12 +176,12 @@ void BulletControlProcess(Remote_t *rc)
 			ChassisSpeedRef.left_right_ref = (rc->ch0 - 1024) / 66.0 * 2000;
 			ChassisSpeedRef.rotate_ref=  (rc->ch2 - 1024) /66.0*1000;
 			aux_motor34_position_target += (rc->ch3 - 1024)/10;
+			MINMAX(aux_motor34_position_target,aux34_limit-5000,aux34_limit);
 		}
 		else
 		{
 			fw_printfln("prepare!");
 		}
-
 }
 
 //键盘鼠标控制模式处理
