@@ -133,50 +133,33 @@ void RemoteControlProcess(Remote_t *rc)
 {
     if(GetWorkState()!=PREPARE_STATE)
     {
-					ChassisSpeedRef.forward_back_ref = (rc->ch1 - 1024) / 66.0 * 4000;
-					ChassisSpeedRef.left_right_ref = (rc->ch0 - 1024) / 66.0 * 4000;
-					ChassisSpeedRef.rotate_ref=  (rc->ch2 - 1024) /66.0*4000;
-					yawAngleTarget = -ChassisSpeedRef.rotate_ref * forward_kp / 2000;
-//					aux1_targetSpeed=(rc->ch3 - 1024) /66.0*3000;
-//					aux2_targetSpeed=aux1_targetSpeed;
-//					aux1_targetSpeed=(-(rc->ch1 - 1024) - (rc->ch2-1024) ) /66.0*5000;
-//					aux2_targetSpeed=(+rc->ch1 - 1024 - (rc->ch2-1024) ) /66.0*5000;
-//			if(GetShootMode() == MANUL){  
+			  ChassisSpeedRef.forward_back_ref = (rc->ch1 - 1024) / 66.0 * 4000;
+				ChassisSpeedRef.left_right_ref = (rc->ch0 - 1024) / 66.0 * 4000;
+				ChassisSpeedRef.rotate_ref=  (rc->ch2 - 1024) /66.0*4000;
+				yawAngleTarget = -ChassisSpeedRef.rotate_ref * forward_kp / 2000;
 				pitchAngleTarget += (rc->ch3 - 1024)/6600.0 * (PITCHUPLIMIT-PITCHDOWNLIMIT);
-//				yawAngleTarget   -= (rc->ch2 - 1024)/660.0 * (PITCHUPLIMIT-PITCHDOWNLIMIT); 
-//			}
 		}
 		else
 		{
 			fw_printfln("prepare!");
 		}
 
-		
-//    if(GetWorkState() == NORMAL_STATE)
-//    {
-//        GimbalRef.pitch_angle_dynamic_ref += (rc->ch3 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET) * STICK_TO_PITCH_ANGLE_INC_FACT;
-//        GimbalRef.yaw_angle_dynamic_ref    += (rc->ch2 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET) * STICK_TO_YAW_ANGLE_INC_FACT;      	
-////	      pitchAngleTarget -= (rc->ch3 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET) * STICK_TO_PITCH_ANGLE_INC_FACT;
-// //       yawAngleTarget   -= (rc->ch2 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET) * STICK_TO_YAW_ANGLE_INC_FACT; 
-//		}
-	
-//	/* not used to control, just as a flag */ 
-//    GimbalRef.pitch_speed_ref = rc->ch3 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET;    //speed_ref仅做输入量判断用
-//    GimbalRef.yaw_speed_ref   = (rc->ch2 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET);
-	//射击-摩擦轮，拨盘电机状态
-	RemoteShootControl(&switch1, rc->s1);
-
+		RemoteShootControl(&switch1, rc->s1);
 }
 
 void BulletControlProcess(Remote_t *rc)
 {
     if(GetWorkState()!=PREPARE_STATE)
     {
-			ChassisSpeedRef.forward_back_ref = (rc->ch1 - 1024) / 66.0 * 2000;   //取弹模式下慢速移动
-			ChassisSpeedRef.left_right_ref = (rc->ch0 - 1024) / 66.0 * 2000;
+			ChassisSpeedRef.forward_back_ref = (rc->ch1 - 1024) / 66.0 * 1000;   //取弹模式下慢速移动
 			ChassisSpeedRef.rotate_ref=  (rc->ch2 - 1024) /66.0*1000;
-			aux_motor34_position_target += (rc->ch3 - 1024)/10;
+			yawAngleTarget = -ChassisSpeedRef.rotate_ref * forward_kp / 2000;
+			
+			aux_motor34_position_target += (rc->ch3 - 1024)/10;                  //升降
 			MINMAX(aux_motor34_position_target,aux34_limit-5000,aux34_limit);
+			
+		  getBullet_angle_target += (rc->ch0 - 1024)/10;                  //伸出
+			MINMAX(getBullet_angle_target,getBullet_limit-12000,getBullet_limit);
 		}
 		else
 		{
@@ -266,7 +249,6 @@ void MouseKeyControlProcess(Mouse_t *mouse, Key_t *key)
 //    GimbalRef.pitch_speed_ref = mouse->y;    //speed_ref仅做输入量判断用
 //    GimbalRef.yaw_speed_ref   = mouse->x;
 	  MouseShootControl(mouse);
-	
 }
 
 
