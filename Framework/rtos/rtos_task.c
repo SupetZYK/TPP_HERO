@@ -67,8 +67,8 @@ void rtos_addThreads(){
 	osThreadDef(printIMUTask, printIMUTask, osPriorityHigh, 0, 128);
   printIMUTaskHandle = osThreadCreate(osThread(printIMUTask), NULL);
 
-//	osThreadDef(getCtrlUartTask, getCtrlUartTask, osPriorityAboveNormal, 0, 512);
-//  getCtrlUartTaskHandle = osThreadCreate(osThread(getCtrlUartTask), NULL);
+	osThreadDef(getCtrlUartTask, getCtrlUartTask, osPriorityAboveNormal, 0, 256);
+  getCtrlUartTaskHandle = osThreadCreate(osThread(getCtrlUartTask), NULL);
 
 	osThreadDef(CMGMC_Task, CMGMControlTask, osPriorityAboveNormal, 0, 512);
   CMGMControlTaskHandle = osThreadCreate(osThread(CMGMC_Task), NULL);

@@ -6,50 +6,39 @@
 #include "usart.h"
 
 NaiveIOPoolDefine(ctrlUartIOPool, {0});
-//uint8_t data;
+uint8_t data;
 uint8_t buf[REC_LEN];
 uint16_t RX_STA=0;
 void zykReceiveData(uint8_t data);
 void ctrlUartRxCpltCallback(){
-	//osStatus osMessagePut (osMessageQId queue_id, uint32_t info, uint32_t millisec);
-//	//LST
-//	IOPool_getNextWrite(ctrlUartIOPool);
-//	HAL_UART_Receive_DMA(&CTRL_UART, IOPool_pGetWriteData(ctrlUartIOPool)->ch, 10);
 	//zyk
-	//fw_printf("rx\r\n");
-	//zykReceiveData(data);
-	//HAL_UART_Receive_IT(&CTRL_UART, &data, 1);
+
+	zykReceiveData(data);
+	HAL_UART_Receive_IT(&CTRL_UART, &data, 1);
 	
-	if((__HAL_UART_GET_FLAG(&huart3,UART_FLAG_IDLE) != RESET))  
-	{
-		__HAL_UART_CLEAR_IDLEFLAG(&huart3);  
-    HAL_UART_DMAStop(&huart3);
-		uint32_t temp = huart3.hdmarx->Instance->NDTR;  
-		uint32_t rx_len =  REC_LEN - temp;
-		buf[rx_len]='\0';
-		//fw_printfln("received!%d",rx_len);
-		//fw_printf(ctrl_buf);
-		//fw_printf("\r\n");
-		RX_STA=0x8000;
-		zykProcessData();
-	}
-	HAL_UART_Receive_DMA(&CTRL_UART, buf, REC_LEN);
+//	if((__HAL_UART_GET_FLAG(&huart3,UART_FLAG_IDLE) != RESET))  
+//	{
+//		__HAL_UART_CLEAR_IDLEFLAG(&huart3);  
+//    HAL_UART_DMAStop(&huart3);
+//		uint32_t temp = huart3.hdmarx->Instance->NDTR;  
+//		uint32_t rx_len =  REC_LEN - temp;
+//		buf[rx_len]='\0';
+//		RX_STA=0x8000;
+//		zykProcessData();
+//	}
+//	HAL_UART_Receive_DMA(&CTRL_UART, buf, REC_LEN);
 }
 
 void ctrlUartInit(){
-//	//crtl DMA接收开启(一次接收10个字节)
-//	if(HAL_UART_Receive_DMA(&CTRL_UART, IOPool_pGetWriteData(ctrlUartIOPool)->ch, 10) != HAL_OK){
-//			Error_Handler();
-//	} 
 	//zyk 一次接收1字节
-//	if(HAL_UART_Receive_IT(&CTRL_UART, &data, 1) != HAL_OK){
-//			Error_Handler();
-//	}
-	
-		if(HAL_UART_Receive_DMA(&CTRL_UART, buf, REC_LEN) != HAL_OK){
+	if(HAL_UART_Receive_IT(&CTRL_UART, &data, 1) != HAL_OK){
 			Error_Handler();
 	}
-  	__HAL_UART_ENABLE_IT(&huart3, UART_IT_IDLE); 
+//	
+//		if(HAL_UART_Receive_DMA(&CTRL_UART, buf, REC_LEN) != HAL_OK){
+//			Error_Handler();
+//	}
+//  	__HAL_UART_ENABLE_IT(&huart3, UART_IT_IDLE); 
 }
 
 
