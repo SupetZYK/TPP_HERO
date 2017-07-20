@@ -8,6 +8,7 @@
 #include "application_remotecontrol.h"
 #include "utilities_debug.h"
 #include "utilities_tim.h"
+#include "drivers_led_user.h"
 NaiveIOPoolDefine(rcUartIOPool, {0});
 
 uint8_t RC_Data_ch[50];
@@ -35,6 +36,7 @@ void rcUartRxCpltCallback(){
 		
 		if(rx_len==18)
 		{
+			ledRedStatus=blink;
 			last_rc_time=fw_getTimeMicros();
 			RC_Data_ch[rx_len]='\0';
 	//	static TickType_t lastcount_rc=0;
@@ -65,11 +67,13 @@ void rcUartRxCpltCallback(){
 		}
 		else
 		{
-			fw_printfln("Wrong length rc!");
+			ledRedStatus=on;
+			//fw_printfln("Wrong length rc!");
 			ChassisSpeedRef.forward_back_ref=0;
 			ChassisSpeedRef.left_right_ref=0;
 			ChassisSpeedRef.rotate_ref=0;
 		}
+		HAL_UART_AbortReceive(&RC_UART);
 		HAL_UART_Receive_DMA(&RC_UART, RC_Data_ch, 50);
 	}
 //	}

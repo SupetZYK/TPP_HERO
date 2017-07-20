@@ -128,10 +128,10 @@ void AMControlTask(void const * argument){
 
 void ShootOnce()
 {
-//	static uint64_t last_shoot_time=0;
-//	uint64_t t=fw_getTimeMicros();
-//	if(t-last_shoot_time>200000)
+	static uint64_t last_shoot_time=0;
+	uint64_t t=fw_getTimeMicros();
+	if(t-last_shoot_time>200000)
 		plate_angle_target-=90.0*95.8;
-//	last_shoot_time=t;
+	last_shoot_time=t;
 	SetShootState(NOSHOOTING);
 }
