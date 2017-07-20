@@ -540,7 +540,7 @@ void MouseShootControl(Mouse_t *mouse)
 				frictionRamp.ResetCounter(&frictionRamp);
 				SetShootState(NOSHOOTING);
 			}			
-			else if(mouse->press_l== 1)  //°´ÏÂ×ó¼ü£¬Éä»÷
+			else if(mouse->last_press_l==0 && mouse->press_l== 1)  //°´ÏÂ×ó¼ü£¬Éä»÷
 			{
 				SetShootState(SHOOTING);		
 				ShootOnce();
@@ -552,6 +552,7 @@ void MouseShootControl(Mouse_t *mouse)
 		} break;				
 	}	
 	mouse->last_press_r = mouse->press_r;
+	mouse->last_press_l = mouse->press_l;
 }
 
 

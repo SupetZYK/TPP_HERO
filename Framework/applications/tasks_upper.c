@@ -31,11 +31,11 @@ void getCtrlUartTask(void const * argument){
 		static int cnt=0;
 	zykProcessData();
 	osDelay(1);
-		if(cnt++>2000)
-		{
-			fw_printf("alive\r\n");
-			cnt=0;
-		}
+//		if(cnt++>2000)
+//		{
+//			fw_printf("alive\r\n");
+//			cnt=0;
+//		}
 	}
 }
 
