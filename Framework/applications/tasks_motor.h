@@ -5,6 +5,13 @@
 
 extern uint8_t GM_RUN;
 
+typedef enum
+{
+	Counterclockwise,
+	Clockwise,
+}PlateDir;
+extern PlateDir plateDir;
+
 typedef __packed struct
 {
     float forward_back_ref;

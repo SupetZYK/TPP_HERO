@@ -266,6 +266,8 @@ void MouseKeyControlProcess(Mouse_t *mouse, Key_t *key)
 	/* not used to control, just as a flag */ 
 //    GimbalRef.pitch_speed_ref = mouse->y;    //speed_ref仅做输入量判断用
 //    GimbalRef.yaw_speed_ref   = mouse->x;
+	  if(key->v & 0x0400) plateDir = Clockwise;
+	  else if (key->v & 0x4000) plateDir = Counterclockwise;
 	  MouseShootControl(mouse);
 	
 }
