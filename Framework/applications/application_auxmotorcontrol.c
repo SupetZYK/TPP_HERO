@@ -4,8 +4,8 @@
 #include "application_pidfunc.h"
 #include "application_setmotor.h"
 #include "utilities_debug.h"
-PID_Regulator_t platePositionPID = PID_INIT(40.0, 0.0, 0.0, 1000000.0, 1000000.0, 1000000.0, 1000000.0);
-PID_Regulator_t plateSpeedPID = PID_INIT(0.7, 0.0, 0.0, 10000.0, 10000.0, 10000.0, 4900.0);//0.0, 0.00003
+PID_Regulator_t platePositionPID = PID_INIT(7.0, 0.0, 0.0, 1000000.0, 1000000.0, 1000000.0, 1000000.0);
+PID_Regulator_t plateSpeedPID = PID_INIT(1.0, 0.0, 0.0, 10000.0, 10000.0, 10000.0, 4900.0);//0.0, 0.00003
 
 PID_Regulator_t getBulletPositionPID = PID_INIT(6.0, 0.0, 0.0, 1000000.0, 1000000.0, 1000000.0, 1000000.0);
 PID_Regulator_t getBulletSpeedPID = PID_INIT(1.0, 0.0, 0.0, 10000.0, 10000.0, 10000.0, 4900.0);//0.0, 0.00003
