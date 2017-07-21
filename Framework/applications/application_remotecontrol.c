@@ -201,8 +201,8 @@ void MouseKeyControlProcess(Mouse_t *mouse, Key_t *key)
 		//movement process
 		if(key->v & 0x01)  // key: w
 		{
-			ChassisSpeedRef.forward_back_ref = forward_back_speed* FBSpeedRamp.Calc(&FBSpeedRamp);
-//			ChassisSpeedRef.forward_back_ref = forward_back_speed/66.0 * 4000;
+			//ChassisSpeedRef.forward_back_ref = forward_back_speed* FBSpeedRamp.Calc(&FBSpeedRamp);
+			ChassisSpeedRef.forward_back_ref = forward_back_speed/66.0 * 4000;
 		}
 		else if(key->v & 0x02) //key: s
 		{
@@ -237,6 +237,11 @@ void MouseKeyControlProcess(Mouse_t *mouse, Key_t *key)
 		else if(key->v & 0x80)
 		{
 			ChassisSpeedRef.rotate_ref=-rotate_speed*RotSpeedRamp.Calc(&RotSpeedRamp);
+		}
+		else
+		{
+			ChassisSpeedRef.rotate_ref=0;
+			RotSpeedRamp.ResetCounter(&RotSpeedRamp);
 		}
 		//mouse x y control
 		ChassisSpeedRef.rotate_ref += mouse->x/15.0*6000;
