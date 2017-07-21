@@ -72,6 +72,7 @@ void rcUartRxCpltCallback(){
 			ChassisSpeedRef.forward_back_ref=0;
 			ChassisSpeedRef.left_right_ref=0;
 			ChassisSpeedRef.rotate_ref=0;
+			HAL_Delay(2);
 		}
 		HAL_UART_AbortReceive(&RC_UART);
 		HAL_UART_Receive_DMA(&RC_UART, RC_Data_ch, 50);

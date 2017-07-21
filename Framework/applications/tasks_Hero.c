@@ -42,7 +42,7 @@ void Hero_Prepare_Get_Bullet()
 		Hero_State=HERO_PREPARE_GET_BULLET;
 		if(!Hero_Lift(aux34_limit,1000)){Hero_Order=HERO_STOP;return;}
 		if(!Hero_Stretch(getBullet_limit,1000)){Hero_Order=HERO_STOP;return;}
-		StartBulletFrictionWheel();
+		//StartBulletFrictionWheel();
 		Hero_State=HERO_GETTING_BULLET;
 	}
 }

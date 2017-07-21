@@ -15,15 +15,22 @@
 #define FRICTION_WHEEL_MAX_DUTY             1180
 #define FRICTION_RAMP_TICK_COUNT			100
 //mouse control parameters
+#define MOUSE_LR_RAMP_TICK_COUNT			50
+#define MOUSR_FB_RAMP_TICK_COUNT			60
+#define MOUSR_ROT_RAMP_TICK_COUNT			50
 #define MOUSE_TO_PITCH_ANGLE_INC_FACT 		0.025f * 3
 #define MOUSE_TO_YAW_ANGLE_INC_FACT 		0.025f * 3
 
 #define LOW_FORWARD_BACK_SPEED 			60
 #define LOW_LEFT_RIGHT_SPEED   			60
+#define LOW_ROTATE_SPEED    60
 #define NORMAL_FORWARD_BACK_SPEED 			400
 #define NORMAL_LEFT_RIGHT_SPEED   			400
+#define NORMAL_ROTATE_SPEED      400
+
 #define HIGH_FORWARD_BACK_SPEED 			660
 #define HIGH_LEFT_RIGHT_SPEED   			660
+#define HIGH_ROTATE_SPEED    660
 //Ò£¿ØÆ÷²¦¸Ë×´Ì¬j
 #define REMOTE_SWITCH_VALUE_UP         		0x01u  
 #define REMOTE_SWITCH_VALUE_DOWN			0x02u
@@ -141,9 +148,9 @@ void WorkStateSwitchProcess(void);
 void StartBulletFrictionWheel();
 void StopBulletFrictionWheel();
 
-void BulletControl(RemoteSwitch_t *sw, uint8_t val);
+void HeroModeSwitch(RemoteSwitch_t *sw, uint8_t val);
 void BulletControlProcess(Remote_t *rc);
 void GetRemoteSwitchAction(RemoteSwitch_t *sw, uint8_t val);
-
+void HeroRemoteGetBulletFrictionControl(RemoteSwitch_t *sw, uint8_t val);
 extern float forward_kp;
 #endif
