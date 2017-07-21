@@ -58,7 +58,11 @@ volatile Shoot_State_e shootState = NOSHOOTING;
 ///////////////////////////////////////////////////////
 
 
-
+////////斜坡
+RampGen_t frictionRamp = RAMP_GEN_DAFAULT;  //摩擦轮斜坡
+RampGen_t LRSpeedRamp = RAMP_GEN_DAFAULT;   //mouse左右移动斜坡
+RampGen_t FBSpeedRamp = RAMP_GEN_DAFAULT;   //mouse前后移动斜坡
+RampGen_t RotSpeedRamp = RAMP_GEN_DAFAULT; //mouse 旋转斜坡
 void RCProcess(RC_CtrlData_t* pRC_CtrlData){
 
 			if(pRC_CtrlData==NULL)
@@ -87,16 +91,7 @@ void RCProcess(RC_CtrlData_t* pRC_CtrlData){
 				}break;
 			}
 			
-			
-			GetRemoteSwitchAction(&switch2,pRC_CtrlData->rc.s2);
-			if(switch2.switch_value1 == REMOTE_SWITCH_CHANGE_3TO2)
-			{
-				Hero_Order=HERO_GETBULLET;
-			}
-			if(switch2.switch_value1 == REMOTE_SWITCH_CHANGE_2TO3)
-			{
-				Hero_Order=HERO_STOP;
-			}
+			HeroModeSwitch(&switch2,pRC_CtrlData->rc.s2);
 }
 
 extern uint64_t last_rc_time;
@@ -146,26 +141,12 @@ void RemoteControlProcess(Remote_t *rc)
 				pitchAngleTarget += (rc->ch3 - 1024)/6600.0 * (PITCHUPLIMIT-PITCHDOWNLIMIT);
 //				yawAngleTarget   -= (rc->ch2 - 1024)/660.0 * (PITCHUPLIMIT-PITCHDOWNLIMIT); 
 //			}
+				RemoteShootControl(&switch1, rc->s1);
 		}
 		else
 		{
 			fw_printfln("prepare!");
 		}
-
-		
-//    if(GetWorkState() == NORMAL_STATE)
-//    {
-//        GimbalRef.pitch_angle_dynamic_ref += (rc->ch3 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET) * STICK_TO_PITCH_ANGLE_INC_FACT;
-//        GimbalRef.yaw_angle_dynamic_ref    += (rc->ch2 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET) * STICK_TO_YAW_ANGLE_INC_FACT;      	
-////	      pitchAngleTarget -= (rc->ch3 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET) * STICK_TO_PITCH_ANGLE_INC_FACT;
-// //       yawAngleTarget   -= (rc->ch2 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET) * STICK_TO_YAW_ANGLE_INC_FACT; 
-//		}
-	
-//	/* not used to control, just as a flag */ 
-//    GimbalRef.pitch_speed_ref = rc->ch3 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET;    //speed_ref仅做输入量判断用
-//    GimbalRef.yaw_speed_ref   = (rc->ch2 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET);
-	//射击-摩擦轮，拨盘电机状态
-	RemoteShootControl(&switch1, rc->s1);
 
 }
 
@@ -174,14 +155,11 @@ void BulletControlProcess(Remote_t *rc)
     if(GetWorkState()!=PREPARE_STATE)
     {
 			ChassisSpeedRef.forward_back_ref = (rc->ch1 - 1024) / 66.0 * 2000;   //取弹模式下慢速移动
-			ChassisSpeedRef.left_right_ref = (rc->ch0 - 1024) / 66.0 * 2000;
+			ChassisSpeedRef.left_right_ref = (rc->ch0 - 1024) / 66.0 * 1500;
 			ChassisSpeedRef.rotate_ref=  (rc->ch2 - 1024) /66.0*1000;
 			aux_motor34_position_target += (rc->ch3 - 1024)/10;
-			MINMAX(aux_motor34_position_target,aux34_limit-5000,aux34_limit);
-		}
-		else
-		{
-			fw_printfln("prepare!");
+			MINMAX(aux_motor34_position_target,aux34_limit-12000,aux34_limit);
+			HeroRemoteGetBulletFrictionControl(&switch1,rc->s1);
 		}
 }
 
@@ -191,83 +169,81 @@ void MouseKeyControlProcess(Mouse_t *mouse, Key_t *key)
 {
 	static uint16_t forward_back_speed = 0;
 	static uint16_t left_right_speed = 0;
+	static uint16_t rotate_speed=0;
 	if(GetWorkState()!=PREPARE_STATE)
 	{
-//		//有云台的设备用鼠标控制云台
-//		VAL_LIMIT(mouse->x, -150, 150); 
-//		VAL_LIMIT(mouse->y, -150, 150); 
+		
 		pitchAngleTarget -= mouse->y* MOUSE_TO_PITCH_ANGLE_INC_FACT;  //(rc->ch3 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET) * STICK_TO_PITCH_ANGLE_INC_FACT;
 		//yawAngleTarget    -= mouse->x* MOUSE_TO_YAW_ANGLE_INC_FACT;
-		//无云台的设备直接用鼠标控制rotate
+
 		VAL_LIMIT(mouse->x, -150, 150); 
 		VAL_LIMIT(mouse->y, -150, 150); 
-		ChassisSpeedRef.rotate_ref = mouse->x/15.0*6000;
-		yawAngleTarget = -ChassisSpeedRef.rotate_ref * forward_kp / 2000;
+		
 		//speed mode: normal speed/high speed
 		if(key->v & 0x10)
 		{
 			forward_back_speed =  HIGH_FORWARD_BACK_SPEED;
 			left_right_speed = HIGH_LEFT_RIGHT_SPEED;
+			rotate_speed=HIGH_ROTATE_SPEED;
 		}
 		else if(key->v & 0x20)
 		{
 			forward_back_speed=LOW_FORWARD_BACK_SPEED;
 			left_right_speed=LOW_LEFT_RIGHT_SPEED;
+			rotate_speed=LOW_ROTATE_SPEED;
 		}
 		else
 		{
 			forward_back_speed =  NORMAL_FORWARD_BACK_SPEED;
 			left_right_speed = NORMAL_LEFT_RIGHT_SPEED;
+			rotate_speed=NORMAL_ROTATE_SPEED;
 		}
 		//movement process
 		if(key->v & 0x01)  // key: w
 		{
-//			ChassisSpeedRef.forward_back_ref = forward_back_speed* FBSpeedRamp.Calc(&FBSpeedRamp);
-			ChassisSpeedRef.forward_back_ref = forward_back_speed/66.0 * 4000;
+			ChassisSpeedRef.forward_back_ref = forward_back_speed* FBSpeedRamp.Calc(&FBSpeedRamp);
+//			ChassisSpeedRef.forward_back_ref = forward_back_speed/66.0 * 4000;
 		}
 		else if(key->v & 0x02) //key: s
 		{
-//			ChassisSpeedRef.forward_back_ref = -forward_back_speed* FBSpeedRamp.Calc(&FBSpeedRamp);
-			ChassisSpeedRef.forward_back_ref = -forward_back_speed/66.0 *4000;
+			ChassisSpeedRef.forward_back_ref = -forward_back_speed* FBSpeedRamp.Calc(&FBSpeedRamp);
+			//ChassisSpeedRef.forward_back_ref = -forward_back_speed/66.0 *4000;
 		}
 		else
 		{
 			ChassisSpeedRef.forward_back_ref = 0;
-			//FBSpeedRamp.ResetCounter(&FBSpeedRamp);
+			FBSpeedRamp.ResetCounter(&FBSpeedRamp);
 		}
 		if(key->v & 0x04)  // key: d
 		{
-//			ChassisSpeedRef.left_right_ref = -left_right_speed* LRSpeedRamp.Calc(&LRSpeedRamp);
-			ChassisSpeedRef.left_right_ref = -left_right_speed/66.0*4000;
+			ChassisSpeedRef.left_right_ref = -left_right_speed* LRSpeedRamp.Calc(&LRSpeedRamp);
+			//ChassisSpeedRef.left_right_ref = -left_right_speed/66.0*4000;
 		}
 		else if(key->v & 0x08) //key: a
 		{
-//			ChassisSpeedRef.left_right_ref = left_right_speed* LRSpeedRamp.Calc(&LRSpeedRamp);
-				ChassisSpeedRef.left_right_ref = left_right_speed/66.0*4000;
+			ChassisSpeedRef.left_right_ref = left_right_speed* LRSpeedRamp.Calc(&LRSpeedRamp);
+			//ChassisSpeedRef.left_right_ref = left_right_speed/66.0*4000;
 		}
 		else
 		{
 			ChassisSpeedRef.left_right_ref = 0;
-			//LRSpeedRamp.ResetCounter(&LRSpeedRamp);
+			FBSpeedRamp.ResetCounter(&LRSpeedRamp);
 		}
-
-	}
-	//step2: gimbal ref calc
- /*   if(GetWorkState() == NORMAL_STATE)
-    {
-		VAL_LIMIT(mouse->x, -150, 150); 
-		VAL_LIMIT(mouse->y, -150, 150); 
 		
-        pitchAngleTarget -= mouse->y* MOUSE_TO_PITCH_ANGLE_INC_FACT;  //(rc->ch3 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET) * STICK_TO_PITCH_ANGLE_INC_FACT;
-        yawAngleTarget    -= mouse->x* MOUSE_TO_YAW_ANGLE_INC_FACT;
-
+		if(key->v & 0x40)
+		{
+			ChassisSpeedRef.rotate_ref=rotate_speed*RotSpeedRamp.Calc(&RotSpeedRamp);
+		}
+		else if(key->v & 0x80)
+		{
+			ChassisSpeedRef.rotate_ref=-rotate_speed*RotSpeedRamp.Calc(&RotSpeedRamp);
+		}
+		//mouse x y control
+		ChassisSpeedRef.rotate_ref += mouse->x/15.0*6000;
+		yawAngleTarget = -ChassisSpeedRef.rotate_ref * forward_kp / 2000;
+		
+		MouseShootControl(mouse);
 	}
-	*/
-	/* not used to control, just as a flag */ 
-//    GimbalRef.pitch_speed_ref = mouse->y;    //speed_ref仅做输入量判断用
-//    GimbalRef.yaw_speed_ref   = mouse->x;
-	  MouseShootControl(mouse);
-	
 }
 
 
@@ -346,7 +322,7 @@ InputMode_e GetInputMode()
 input: RemoteSwitch_t *sw, include the switch info
 */
 
-RampGen_t frictionRamp = RAMP_GEN_DAFAULT; 
+ 
 void RemoteShootControl(RemoteSwitch_t *sw, uint8_t val) 
 {
 	GetRemoteSwitchAction(sw, val);
@@ -406,7 +382,7 @@ void RemoteShootControl(RemoteSwitch_t *sw, uint8_t val)
 	}
 }
 
-void BulletControl(RemoteSwitch_t *sw, uint8_t val) 
+void HeroModeSwitch(RemoteSwitch_t *sw, uint8_t val) 
 {
 	GetRemoteSwitchAction(sw, val);
 	if(sw->switch_value1 == REMOTE_SWITCH_CHANGE_3TO2)
@@ -417,62 +393,19 @@ void BulletControl(RemoteSwitch_t *sw, uint8_t val)
 	{
 		Hero_Order=HERO_STOP;
 	}
-	/*
-	switch(friction_wheel_state)
+}
+
+void HeroRemoteGetBulletFrictionControl(RemoteSwitch_t *sw, uint8_t val)
+{
+	GetRemoteSwitchAction(sw, val);
+	if(sw->switch_value1 == REMOTE_SWITCH_CHANGE_1TO3)
 	{
-		case FRICTION_WHEEL_OFF:
-		{
-			if(sw->switch_value1 == REMOTE_SWITCH_CHANGE_1TO3)   //从关闭到start turning
-			{
-				SetShootState(NOSHOOTING);
-				frictionRamp.ResetCounter(&frictionRamp);
-				friction_wheel_state = FRICTION_WHEEL_START_TURNNING;	 
-				LASER_ON(); 
-			}				 		
-		}break;
-		case FRICTION_WHEEL_START_TURNNING:
-		{
-			if(sw->switch_value1 == REMOTE_SWITCH_CHANGE_3TO1)   //刚启动就被关闭
-			{
-				LASER_OFF();
-				SetShootState(NOSHOOTING);
-				SetFrictionWheelSpeed(1000);
-				friction_wheel_state = FRICTION_WHEEL_OFF;
-				frictionRamp.ResetCounter(&frictionRamp);
-			}
-			else
-			{
-				SetFrictionWheelSpeed(1000 + (FRICTION_WHEEL_MAX_DUTY-1000)*frictionRamp.Calc(&frictionRamp)); 
-				SetFrictionWheelSpeed(FRICTION_WHEEL_MAX_DUTY);
-				if(frictionRamp.IsOverflow(&frictionRamp))
-				{
-					friction_wheel_state = FRICTION_WHEEL_ON; 	
-				}
-				friction_wheel_state = FRICTION_WHEEL_ON; 	
-			}
-		}break;
-		case FRICTION_WHEEL_ON:
-		{
-			if(sw->switch_value1 == REMOTE_SWITCH_CHANGE_3TO1)   //关闭摩擦轮
-			{
-				LASER_OFF();
-				friction_wheel_state = FRICTION_WHEEL_OFF;				  
-				SetFrictionWheelSpeed(1000); 
-				frictionRamp.ResetCounter(&frictionRamp);
-				SetShootState(NOSHOOTING);
-			}
-			else if(sw->switch_value1 == REMOTE_SWITCH_CHANGE_3TO2)
-			{
-				SetShootState(SHOOTING);
-				ShootOnce();
-			}
-			else
-			{
-				SetShootState(NOSHOOTING);
-			}					 
-		} break;				
+		StartBulletFrictionWheel();
 	}
-	*/
+	if(sw->switch_value1 == REMOTE_SWITCH_CHANGE_3TO1)
+	{
+		StopBulletFrictionWheel();
+	}
 }
 
 void MouseShootControl(Mouse_t *mouse)
@@ -614,12 +547,13 @@ WorkState_e GetWorkState()
 void RemoteTaskInit(void)
 {
 	frictionRamp.SetScale(&frictionRamp, FRICTION_RAMP_TICK_COUNT);
-//	LRSpeedRamp.SetScale(&LRSpeedRamp, MOUSE_LR_RAMP_TICK_COUNT);
-//	FBSpeedRamp.SetScale(&FBSpeedRamp, MOUSR_FB_RAMP_TICK_COUNT);
+	LRSpeedRamp.SetScale(&LRSpeedRamp, MOUSE_LR_RAMP_TICK_COUNT);
+	FBSpeedRamp.SetScale(&FBSpeedRamp, MOUSR_FB_RAMP_TICK_COUNT);
+	RotSpeedRamp.SetScale(&RotSpeedRamp, MOUSR_ROT_RAMP_TICK_COUNT);
 	frictionRamp.ResetCounter(&frictionRamp);
-//	LRSpeedRamp.ResetCounter(&LRSpeedRamp);
-//	FBSpeedRamp.ResetCounter(&FBSpeedRamp);
-
+	LRSpeedRamp.ResetCounter(&LRSpeedRamp);
+	FBSpeedRamp.ResetCounter(&FBSpeedRamp);
+	RotSpeedRamp.ResetCounter(&RotSpeedRamp);
 //	GimbalRef.pitch_angle_dynamic_ref = 0.0f;
 //	GimbalRef.yaw_angle_dynamic_ref = 0.0f;
 	ChassisSpeedRef.forward_back_ref = 0.0f;
