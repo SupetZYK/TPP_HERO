@@ -250,7 +250,7 @@ void MouseKeyControlProcess(Mouse_t *mouse, Key_t *key)
 		}
 		
 		//mouse x y control
-		ChassisSpeedRef.rotate_ref += mouse->x/15.0*6000;
+		ChassisSpeedRef.rotate_ref += mouse->x/15.0*3000;
 		yawAngleTarget = -ChassisSpeedRef.rotate_ref * forward_kp / 2000;
 		
 		MouseShootControl(mouse);
