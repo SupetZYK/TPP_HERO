@@ -28,7 +28,7 @@ else if(val>=max)\
 
 
 
-
+EMER emer = NORMAL_RUN;
 
 
 //extern RampGen_t frictionRamp ;  //Ä¦²ÁÂÖÐ±ÆÂ
@@ -251,6 +251,8 @@ void MouseKeyControlProcess(Mouse_t *mouse, Key_t *key)
 		yawAngleTarget = -ChassisSpeedRef.rotate_ref * forward_kp / 2000;
 		
 		MouseShootControl(mouse);
+		
+		if((key->v & 0x8000)&&(key->v & 0x4000)) emer = RESTART;
 	}
 }
 

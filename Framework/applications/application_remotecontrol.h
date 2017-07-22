@@ -60,6 +60,12 @@ typedef enum
 	REMOTE_BULLET_INPUT = 2,
 }InputMode_e;
 
+typedef enum
+{
+	NORMAL_RUN,
+	RESTART,
+}EMER;
+extern EMER emer;
 
 typedef enum
 {

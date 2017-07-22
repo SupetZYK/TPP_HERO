@@ -9,6 +9,9 @@
 #include "utilities_debug.h"
 #include "utilities_tim.h"
 #include "drivers_led_user.h"
+#include "iwdg.h"
+#include "stm32f4xx_hal_iwdg.h"
+#include "application_remotecontrol.h"
 NaiveIOPoolDefine(rcUartIOPool, {0});
 
 uint8_t RC_Data_ch[50];
@@ -64,6 +67,7 @@ void rcUartRxCpltCallback(){
 			pRC_CtrlData->key.v = ((int16_t)RC_Data_ch[14]) | ((int16_t)RC_Data_ch[15] << 8);
 			IOPool_getNextWrite(rcUartIOPool);
 			RCProcess(pRC_CtrlData);
+		//	if(emer == NORMAL_RUN) HAL_IWDG_Refresh(&hiwdg);
 		}
 		else
 		{
