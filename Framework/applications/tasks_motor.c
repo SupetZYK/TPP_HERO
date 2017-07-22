@@ -77,7 +77,7 @@ double getBullet_angle_target=0;//aux6
 double getBullet_zero_angle=0;
 
 double aux34_limit = 36000;
-double getBullet_limit=25000;
+double getBullet_limit=50000;
 uint8_t aux_run=0;
 void AMControlTask(void const * argument){
 	while(1){

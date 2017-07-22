@@ -14,6 +14,7 @@ typedef enum
 typedef enum
 {
 	HERO_GETBULLET=1,
+	HERO_AUTO_GETBULLET=2,
 	HERO_STOP=3,
 	HERO_STANDBY=4,
 }Hero_Order_t;
