@@ -49,3 +49,7 @@ Temporary Items
 MDK-ARM/X_Infantry.uvguix.*
 MDK-ARM/X_Infantry/*
 MDK-ARM/startup_stm32f427xx.lst
+MDK-ARM/X_Infantry.uvoptx
+*.uvprojx
+MDK-ARM/X_Infantry.uvoptx
+*.uvprojx

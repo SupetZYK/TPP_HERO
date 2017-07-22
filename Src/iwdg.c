@@ -1,8 +1,8 @@
 /**
   ******************************************************************************
-  * File Name          : dma.c
+  * File Name          : IWDG.c
   * Description        : This file provides code for the configuration
-  *                      of all the requested memory to memory DMA transfers.
+  *                      of the IWDG instances.
   ******************************************************************************
   *
   * Copyright (c) 2017 STMicroelectronics International N.V. 
@@ -41,43 +41,33 @@
   *
   ******************************************************************************
   */
+
 /* Includes ------------------------------------------------------------------*/
-#include "dma.h"
+#include "iwdg.h"
 
 /* USER CODE BEGIN 0 */
 
 /* USER CODE END 0 */
 
-/*----------------------------------------------------------------------------*/
-/* Configure DMA                                                              */
-/*----------------------------------------------------------------------------*/
+IWDG_HandleTypeDef hiwdg;
+
+/* IWDG init function */
+void MX_IWDG_Init(void)
+{
+
+  hiwdg.Instance = IWDG;
+  hiwdg.Init.Prescaler = IWDG_PRESCALER_64;
+  hiwdg.Init.Reload = 2000;
+  if (HAL_IWDG_Init(&hiwdg) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+}
 
 /* USER CODE BEGIN 1 */
 
 /* USER CODE END 1 */
-
-/** 
-  * Enable DMA controller clock
-  */
-void MX_DMA_Init(void) 
-{
-  /* DMA controller clock enable */
-  __HAL_RCC_DMA2_CLK_ENABLE();
-  __HAL_RCC_DMA1_CLK_ENABLE();
-
-  /* DMA interrupt init */
-  /* DMA1_Stream1_IRQn interrupt configuration */
-//  HAL_NVIC_SetPriority(DMA1_Stream1_IRQn, 5, 0);
-//  HAL_NVIC_EnableIRQ(DMA1_Stream1_IRQn);
-  /* DMA2_Stream2_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA2_Stream2_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(DMA2_Stream2_IRQn);
-
-}
-
-/* USER CODE BEGIN 2 */
-
-/* USER CODE END 2 */
 
 /**
   * @}

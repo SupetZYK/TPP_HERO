@@ -12,6 +12,7 @@ void Hero_Recover();
 uint8_t Hero_Stretch(float value, uint32_t time_milis);
 uint8_t Hero_Lift(float value, uint32_t time_milis);
 void Hero_Prepare_Get_Bullet();
+void Hero_Auto_Get_Bullet();
 void HeroTask(void const * argument){
 	while(1)
 	{
@@ -20,6 +21,10 @@ void HeroTask(void const * argument){
 			case HERO_GETBULLET:
 			{
 				Hero_Prepare_Get_Bullet();
+			}break;
+			case HERO_AUTO_GETBULLET:
+			{
+				Hero_Auto_Get_Bullet();
 			}break;
 			case HERO_STOP:
 			{
@@ -40,15 +45,35 @@ void Hero_Prepare_Get_Bullet()
 	if(Hero_State==HERO_NORMAL_STATE)
 	{
 		Hero_State=HERO_PREPARE_GET_BULLET;
-		if(!Hero_Lift(aux34_limit,1000)){Hero_Order=HERO_STOP;return;}
+		if(!Hero_Lift(aux34_limit,2000)){Hero_Order=HERO_STOP;return;}
 		if(!Hero_Stretch(getBullet_limit,1000)){Hero_Order=HERO_STOP;return;}
 		//StartBulletFrictionWheel();
 		Hero_State=HERO_GETTING_BULLET;
 	}
 }
 
+uint8_t Hero_Strech_and_Lift(float stretch_valu,float lift_value,uint32_t time_milis);
+void Hero_Auto_Get_Bullet()
+{
+	Hero_Order=HERO_STANDBY;
+	if(Hero_State==HERO_GETTING_BULLET)
+	{
+		fw_printfln("start auto move!");
+		while(1)
+		{
+			StopBulletFrictionWheel();
+			if(!Hero_Strech_and_Lift(getBullet_limit-15000,aux34_limit,300)) break;
+			StartBulletFrictionWheel();
+			if(!Hero_Strech_and_Lift(getBullet_limit-14000,aux34_limit-800,200)) break;
+			if(!Hero_Strech_and_Lift(getBullet_limit-12000,aux34_limit-2400,200)) break;
+			if(!Hero_Strech_and_Lift(getBullet_limit-9000,aux34_limit-4800,200)) break;
+			if(!Hero_Strech_and_Lift(getBullet_limit-5000,aux34_limit-8000,200)) break;
+			if(!Hero_Strech_and_Lift(getBullet_limit,aux34_limit-12000,200)) break;
 
-
+		}
+		fw_printfln("end auto move!");
+	}
+}
 
 
 //伸出的闭环控制任务函数，
@@ -126,6 +151,26 @@ uint8_t Hero_Lift(float value, uint32_t time_milis)
 	return 1;
 }
 
+
+uint8_t Hero_Strech_and_Lift(float stretch_value,float lift_value,uint32_t time_milis)
+{
+	float original_l=aux_motor34_position_target;
+	float tmp_l=(lift_value-original_l)/time_milis;
+	float original_s=getBullet_angle_target;
+	float tmp_s=(stretch_value-original_s)/time_milis;
+	for(uint32_t i=0;i<time_milis+1;i++)
+	{
+		aux_motor34_position_target=original_l + i*tmp_l;
+		getBullet_angle_target=original_s+i*tmp_s;
+		if(Hero_Order==HERO_STOP)
+		{	
+			fw_printfln("stop called when lift and stretch!");
+			return 0;
+		}
+		osDelay(1);
+	}
+	return 1;
+}
 //no check, only used in recovering!
 void HeroForceLift(float value, uint32_t time_milis)
 {
@@ -160,6 +205,6 @@ void Hero_Recover()
 	StopBulletFrictionWheel();
 	HeroForceLift(aux34_limit,1000);
 	HeroForceStretch(0,1000);
-	HeroForceLift(0,1000);
+	HeroForceLift(0,2000);
 	Hero_State=HERO_NORMAL_STATE;
 }
