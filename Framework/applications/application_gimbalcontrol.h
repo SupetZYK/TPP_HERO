@@ -6,8 +6,8 @@ extern int16_t YawZeroEncoderBias; //1075 ///1075//4906
 #define YAWDOWNLIMIT -25
 
 extern int16_t PitchZeroEncoderBias; //3180 ///1075//4906
-#define PITCHUPLIMIT 20
-#define PITCHDOWNLIMIT -18
+#define PITCHUPLIMIT 30
+#define PITCHDOWNLIMIT -10
 void setYawWithAngle(float targetAngle);
 void setPitchWithAngle(float targetAngle);
 

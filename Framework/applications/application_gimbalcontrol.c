@@ -18,7 +18,7 @@ PID_Regulator_t pitchSpeedPID = PID_INIT(30.0, 0.0, 1.0, 10000.0, 10000.0, 10000
 //PID_Regulator_t pitchSpeedPID = PID_INIT(1.0, 0.0, 0.0, 10000.0, 10000.0, 10000.0, 4900.0);
 //ÔÆÌ¨Æ«ÖÃ
 //4ºÅ³µ590 5041
-int16_t YawZeroEncoderBias=5950;
+int16_t YawZeroEncoderBias=6024;
 int16_t PitchZeroEncoderBias=790;
 float yawRealAngle=0;
 float pitchRealAngle=0;
