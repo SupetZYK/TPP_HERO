@@ -154,9 +154,9 @@ void BulletControlProcess(Remote_t *rc)
 {
     if(GetWorkState()!=PREPARE_STATE)
     {
-			ChassisSpeedRef.forward_back_ref = (rc->ch1 - 1024) / 66.0 * 2000;   //取弹模式下慢速移动
-			ChassisSpeedRef.left_right_ref = (rc->ch0 - 1024) / 66.0 * 1500;
-			ChassisSpeedRef.rotate_ref=  (rc->ch2 - 1024) /66.0*1000;
+			ChassisSpeedRef.forward_back_ref = (rc->ch1 - 1024) / 66.0 * 500;   //取弹模式下慢速移动
+			ChassisSpeedRef.left_right_ref = (rc->ch0 - 1024) / 66.0 * 500;
+			ChassisSpeedRef.rotate_ref=  (rc->ch2 - 1024) /66.0*500;
 			aux_motor34_position_target += (rc->ch3 - 1024)/10;
 			MINMAX(aux_motor34_position_target,aux34_limit-12000,aux34_limit);
 			HeroRemoteGetBulletFrictionControl(&switch1,rc->s1);
@@ -202,8 +202,8 @@ void MouseKeyControlProcess(Mouse_t *mouse, Key_t *key)
 		//movement process
 		if(key->v & 0x01)  // key: w
 		{
-			//ChassisSpeedRef.forward_back_ref = forward_back_speed* FBSpeedRamp.Calc(&FBSpeedRamp);
-			ChassisSpeedRef.forward_back_ref = forward_back_speed/66.0 * 4000;
+			ChassisSpeedRef.forward_back_ref = forward_back_speed* FBSpeedRamp.Calc(&FBSpeedRamp);
+			//ChassisSpeedRef.forward_back_ref = forward_back_speed/66.0 * 4000;
 		}
 		else if(key->v & 0x02) //key: s
 		{
@@ -245,11 +245,7 @@ void MouseKeyControlProcess(Mouse_t *mouse, Key_t *key)
 			ChassisSpeedRef.rotate_ref = 0;
 			RotSpeedRamp.ResetCounter(&RotSpeedRamp);
 		}
-		else
-		{
-			ChassisSpeedRef.rotate_ref=0;
-			RotSpeedRamp.ResetCounter(&RotSpeedRamp);
-		}
+		
 		//mouse x y control
 		ChassisSpeedRef.rotate_ref += mouse->x/15.0*6000;
 		yawAngleTarget = -ChassisSpeedRef.rotate_ref * forward_kp / 2000;

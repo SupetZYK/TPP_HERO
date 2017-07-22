@@ -11,7 +11,7 @@
 //LASER
 #define LASER_ON()  HAL_GPIO_WritePin(LASER_GPIO_Port, LASER_Pin,GPIO_PIN_SET)
 #define LASER_OFF()  HAL_GPIO_WritePin(LASER_GPIO_Port, LASER_Pin,GPIO_PIN_RESET)
-//ƒ¶≤¡¬÷
+//Êë©Êì¶ËΩÆ
 #define FRICTION_WHEEL_MAX_DUTY             1180
 #define FRICTION_RAMP_TICK_COUNT			100
 //mouse control parameters
@@ -21,7 +21,6 @@
 #define MOUSE_TO_PITCH_ANGLE_INC_FACT 		0.025f * 3
 #define MOUSE_TO_YAW_ANGLE_INC_FACT 		0.025f * 3
 
-<<<<<<< HEAD
 #define LOW_FORWARD_BACK_SPEED 			10000
 #define LOW_LEFT_RIGHT_SPEED   			10000
 #define LOW_ROTATE_SPEED    10000
@@ -32,19 +31,8 @@
 #define HIGH_FORWARD_BACK_SPEED 			35000
 #define HIGH_LEFT_RIGHT_SPEED   			35000
 #define HIGH_ROTATE_SPEED    35000
-=======
-#define LOW_FORWARD_BACK_SPEED 			9000
-#define LOW_LEFT_RIGHT_SPEED   			9000
-#define LOW_ROTATE_SPEED    9000
-#define NORMAL_FORWARD_BACK_SPEED 			20000
-#define NORMAL_LEFT_RIGHT_SPEED   			20000
-#define NORMAL_ROTATE_SPEED      20000
 
-#define HIGH_FORWARD_BACK_SPEED 			30000
-#define HIGH_LEFT_RIGHT_SPEED   			30000
-#define HIGH_ROTATE_SPEED    30000
->>>>>>> origin/master
-//“£øÿ∆˜≤¶∏À◊¥Ã¨j
+//ÈÅ•ÊéßÂô®Êã®ÊùÜÁä∂ÊÄÅj
 #define REMOTE_SWITCH_VALUE_UP         		0x01u  
 #define REMOTE_SWITCH_VALUE_DOWN			0x02u
 #define REMOTE_SWITCH_VALUE_CENTRAL			0x03u
@@ -61,9 +49,9 @@
 #define REMOTE_SWITCH_CHANGE_2TO3TO1   (uint8_t)((REMOTE_SWITCH_VALUE_DOWN << 4) |\
                                                  (REMOTE_SWITCH_VALUE_CENTRAL << 2) |\
                                                  (REMOTE_SWITCH_VALUE_UP)) 
-//◊º±∏ ±º‰																								 
+//ÂáÜÂ§áÊó∂Èó¥																								 
 #define PREPARE_TIME_TICK_MS 250      //prapare time in ms*2
-// ‰»Îƒ£ Ω:“£øÿ∆˜/º¸≈Ã Û±Í/Õ£÷π‘À––
+//ËæìÂÖ•Ê®°Âºè:ÈÅ•ÊéßÂô®/ÈîÆÁõòÈº†Ê†á/ÂÅúÊ≠¢ËøêË°å
 typedef enum
 {
 	REMOTE_INPUT = 1,
@@ -75,11 +63,11 @@ typedef enum
 
 typedef enum
 {
-    PREPARE_STATE,     		//…œµÁ∫Û≥ı ºªØ◊¥Ã¨ 4s÷”◊Û”“
-    STANDBY_STATE,			//‘∆Ã®Õ£÷π≤ª◊™◊¥Ã¨
-    NORMAL_STATE,			//Œﬁ ‰»Î◊¥Ã¨
-    STOP_STATE,        	//Õ£÷π‘À∂Ø◊¥Ã¨
-    CALI_STATE,    			//–£◊º◊¥Ã¨
+    PREPARE_STATE,     		//‰∏äÁîµÂêéÂàùÂßãÂåñÁä∂ÊÄÅ 4sÈíüÂ∑¶Âè≥
+    STANDBY_STATE,			//‰∫ëÂè∞ÂÅúÊ≠¢‰∏çËΩ¨Áä∂ÊÄÅ
+    NORMAL_STATE,			//Êó†ËæìÂÖ•Áä∂ÊÄÅ
+    STOP_STATE,        	//ÂÅúÊ≠¢ËøêÂä®Áä∂ÊÄÅ
+    CALI_STATE,    			//Ê†°ÂáÜÁä∂ÊÄÅ
 }WorkState_e;
 
 typedef enum
@@ -115,7 +103,7 @@ typedef enum
 	SHOOTING = 1,
 }Shoot_State_e;
 
-//ƒ¶≤¡¬÷◊¥Ã¨√∂æŸ
+//Êë©Êì¶ËΩÆÁä∂ÊÄÅÊûö‰∏æ
 typedef enum
 {
 	FRICTION_WHEEL_OFF = 0,
@@ -123,7 +111,7 @@ typedef enum
 	FRICTION_WHEEL_ON = 2,
 }FrictionWheelState_e;
 
-//≤¶∏À∂Ø◊˜√∂æŸ
+//Êã®ÊùÜÂä®‰ΩúÊûö‰∏æ
 typedef enum
 {
 	FROM1TO2,
@@ -141,7 +129,7 @@ void RCProcess(RC_CtrlData_t* pRC_CtrlData);
 //void RControlTask(void const * argument);
 void RemoteTaskInit(void);
 
-//µ˜”√µƒ∫Ø ˝…˘√˜
+//Ë∞ÉÁî®ÁöÑÂáΩÊï∞Â£∞Êòé
 Shoot_State_e GetShootState();
 void MouseKeyControlProcess(Mouse_t *mouse, Key_t *key);
 void RemoteControlProcess(Remote_t *rc);
