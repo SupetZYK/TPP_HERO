@@ -154,9 +154,9 @@ void BulletControlProcess(Remote_t *rc)
 {
     if(GetWorkState()!=PREPARE_STATE)
     {
-			ChassisSpeedRef.forward_back_ref = (rc->ch1 - 1024) / 66.0 * 2000;   //取弹模式下慢速移动
-			ChassisSpeedRef.left_right_ref = (rc->ch0 - 1024) / 66.0 * 1500;
-			ChassisSpeedRef.rotate_ref=  (rc->ch2 - 1024) /66.0*1000;
+			ChassisSpeedRef.forward_back_ref = (rc->ch1 - 1024) / 66.0 * 500;   //取弹模式下慢速移动
+			ChassisSpeedRef.left_right_ref = (rc->ch0 - 1024) / 66.0 * 500;
+			ChassisSpeedRef.rotate_ref=  (rc->ch2 - 1024) /66.0*500;
 			aux_motor34_position_target += (rc->ch3 - 1024)/10;
 			MINMAX(aux_motor34_position_target,aux34_limit-12000,aux34_limit);
 			HeroRemoteGetBulletFrictionControl(&switch1,rc->s1);
