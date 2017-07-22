@@ -198,6 +198,7 @@ void MouseKeyControlProcess(Mouse_t *mouse, Key_t *key)
 			left_right_speed = NORMAL_LEFT_RIGHT_SPEED;
 			rotate_speed=NORMAL_ROTATE_SPEED;
 		}
+		
 		//movement process
 		if(key->v & 0x01)  // key: w
 		{
@@ -214,6 +215,7 @@ void MouseKeyControlProcess(Mouse_t *mouse, Key_t *key)
 			ChassisSpeedRef.forward_back_ref = 0;
 			FBSpeedRamp.ResetCounter(&FBSpeedRamp);
 		}
+		
 		if(key->v & 0x04)  // key: d
 		{
 			ChassisSpeedRef.left_right_ref = -left_right_speed* LRSpeedRamp.Calc(&LRSpeedRamp);
@@ -227,16 +229,21 @@ void MouseKeyControlProcess(Mouse_t *mouse, Key_t *key)
 		else
 		{
 			ChassisSpeedRef.left_right_ref = 0;
-			FBSpeedRamp.ResetCounter(&LRSpeedRamp);
+			LRSpeedRamp.ResetCounter(&LRSpeedRamp);
 		}
 		
 		if(key->v & 0x40)
 		{
-			ChassisSpeedRef.rotate_ref=rotate_speed*RotSpeedRamp.Calc(&RotSpeedRamp);
+			ChassisSpeedRef.rotate_ref=-rotate_speed*RotSpeedRamp.Calc(&RotSpeedRamp);
 		}
 		else if(key->v & 0x80)
 		{
-			ChassisSpeedRef.rotate_ref=-rotate_speed*RotSpeedRamp.Calc(&RotSpeedRamp);
+			ChassisSpeedRef.rotate_ref=rotate_speed*RotSpeedRamp.Calc(&RotSpeedRamp);
+		}
+		else 
+		{
+			ChassisSpeedRef.rotate_ref = 0;
+			RotSpeedRamp.ResetCounter(&RotSpeedRamp);
 		}
 		else
 		{
