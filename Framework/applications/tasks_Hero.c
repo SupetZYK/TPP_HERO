@@ -30,10 +30,12 @@ void HeroTask(void const * argument){
 			{
 				Hero_Recover();
 			}break;
+
 			case HERO_STANDBY:
 			{
 				osDelay(10);
 			}break;
+			
 		}
 	}
 }
@@ -45,7 +47,7 @@ void Hero_Prepare_Get_Bullet()
 	if(Hero_State==HERO_NORMAL_STATE)
 	{
 		Hero_State=HERO_PREPARE_GET_BULLET;
-		if(!Hero_Lift(aux34_limit,2000)){Hero_Order=HERO_STOP;return;}
+		if(!Hero_Lift(aux34_limit,1500)){Hero_Order=HERO_STOP;return;}
 		if(!Hero_Stretch(getBullet_limit,1000)){Hero_Order=HERO_STOP;return;}
 		//StartBulletFrictionWheel();
 		Hero_State=HERO_GETTING_BULLET;
@@ -58,18 +60,19 @@ void Hero_Auto_Get_Bullet()
 	Hero_Order=HERO_STANDBY;
 	if(Hero_State==HERO_GETTING_BULLET)
 	{
+		Hero_State=HERO_AUTO_GETTING_BULLET;
 		fw_printfln("start auto move!");
 		while(1)
 		{
 			StopBulletFrictionWheel();
 			if(!Hero_Strech_and_Lift(getBullet_limit-15000,aux34_limit,300)) break;
 			StartBulletFrictionWheel();
-			if(!Hero_Strech_and_Lift(getBullet_limit-14000,aux34_limit-800,200)) break;
-			if(!Hero_Strech_and_Lift(getBullet_limit-12000,aux34_limit-2400,200)) break;
-			if(!Hero_Strech_and_Lift(getBullet_limit-9000,aux34_limit-4800,200)) break;
-			if(!Hero_Strech_and_Lift(getBullet_limit-5000,aux34_limit-8000,200)) break;
-			if(!Hero_Strech_and_Lift(getBullet_limit,aux34_limit-12000,200)) break;
-
+//			if(!Hero_Strech_and_Lift(getBullet_limit-14000,aux34_limit-800,350)) break;
+//			if(!Hero_Strech_and_Lift(getBullet_limit-12000,aux34_limit-2400,350)) break;
+//			if(!Hero_Strech_and_Lift(getBullet_limit-9000,aux34_limit-4800,350)) break;
+//			if(!Hero_Strech_and_Lift(getBullet_limit-5000,aux34_limit-8000,350)) break;
+			if(!Hero_Strech_and_Lift(getBullet_limit-10000,aux34_limit-8000,1500)) break;
+			if(!Hero_Strech_and_Lift(getBullet_limit,aux34_limit-12000,1500)) break; 
 		}
 		fw_printfln("end auto move!");
 	}
@@ -121,8 +124,9 @@ uint8_t Hero_Stretch(float value, uint32_t time_milis)
 uint8_t Hero_Lift(float value, uint32_t time_milis)
 {
 	float original=aux_motor34_position_target;
+	fw_printfln("original is %f",original);
 	float tmp=(value-original)/time_milis;
-	for(uint32_t i=0;i<time_milis+1;i++)
+	for(uint32_t i=1;i<=time_milis+1;i++)
 	{
 		aux_motor34_position_target=original + i*tmp;
 		if(Hero_Order==HERO_STOP)
@@ -200,11 +204,21 @@ void HeroForceStretch(float value, uint32_t time_milis)
 //Ö´ÐÐ»Ö¸´¶¯×÷£¬ÉìËõ£¬½µÂä£¬¹Ø±ÕÄ¦²ÁÂÖ
 void Hero_Recover()
 {
-	Hero_Order=HERO_STANDBY;
-	Hero_State=HERO_RECOVERING;
-	StopBulletFrictionWheel();
-	HeroForceLift(aux34_limit,1000);
-	HeroForceStretch(0,1000);
-	HeroForceLift(0,2000);
-	Hero_State=HERO_NORMAL_STATE;
+	if(Hero_State!=HERO_AUTO_GETTING_BULLET)
+	{
+		Hero_Order=HERO_STANDBY;
+		Hero_State=HERO_RECOVERING;
+		StopBulletFrictionWheel();
+		HeroForceLift(aux34_limit,1000);
+		HeroForceStretch(0,1000);
+		HeroForceLift(0,2000);
+		Hero_State=HERO_NORMAL_STATE;
+	}
+	else
+	{
+		Hero_Order=HERO_GETBULLET;
+		Hero_State=HERO_GETTING_BULLET;
+		HeroForceLift(aux34_limit,1000);
+		HeroForceStretch(getBullet_limit,1000);
+	}
 }
