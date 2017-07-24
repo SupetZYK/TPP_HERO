@@ -10,6 +10,7 @@
 #include "utilities_tim.h"
 #include "drivers_led_user.h"
 #include "iwdg.h"
+#include "application_remotecontrol.h"
 NaiveIOPoolDefine(rcUartIOPool, {0});
 
 uint8_t RC_Data_ch[50];
@@ -37,7 +38,8 @@ void rcUartRxCpltCallback(){
 		
 		if(rx_len==18)
 		{
-			HAL_IWDG_Refresh(&hiwdg);
+			if(emer == NORMAL_RUN) HAL_IWDG_Refresh(&hiwdg);
+			
 			ledRedStatus=blink;
 			last_rc_time=fw_getTimeMicros();
 			RC_Data_ch[rx_len]='\0';

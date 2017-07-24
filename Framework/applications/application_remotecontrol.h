@@ -154,4 +154,18 @@ void BulletControlProcess(Remote_t *rc);
 void GetRemoteSwitchAction(RemoteSwitch_t *sw, uint8_t val);
 void HeroRemoteGetBulletFrictionControl(RemoteSwitch_t *sw, uint8_t val);
 extern float forward_kp;
+
+//紧急手动复位
+typedef enum
+{
+	NORMAL_RUN,
+	RESTART,
+}EMER;
+extern EMER emer;
+
+typedef enum
+{
+	LOCK,
+	UNLOCK,
+}GMMODE;
 #endif
