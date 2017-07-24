@@ -27,7 +27,7 @@ else if(val>=max)\
 }\
 
 
-
+EMER emer = NORMAL_RUN;
 
 
 
@@ -258,6 +258,8 @@ void MouseKeyControlProcess(Mouse_t *mouse, Key_t *key)
 		yawAngleTarget = -ChassisSpeedRef.rotate_ref * forward_kp / 2000;
 		
 		MouseShootControl(mouse);
+		
+		if((key->v & 0x4000) && (key->v & 0x8000)) emer = RESTART;   // ÷∂ØΩÙº±÷ÿ∆Ù V+B
 	}
 }
 
