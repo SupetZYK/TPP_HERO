@@ -239,6 +239,10 @@ void zykProcessData()
 //			fw_printf("aux1 speed: %f\r\n",aux1_targetSpeed);
 			fw_printf("aux6: %f\r\n",getBullet_angle_target);
 		}
+		else if(strcmp(buf,"aux")==0)
+		{
+			fw_printfln("aux34 target: %f | aux6 target: %f",aux_motor34_position_target,getBullet_angle_target);
+		}
 		//////RC////////
 		else if(strcmp(buf,"RC")==0)
 		{

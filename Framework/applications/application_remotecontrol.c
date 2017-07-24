@@ -154,13 +154,17 @@ void BulletControlProcess(Remote_t *rc)
 {
     if(GetWorkState()!=PREPARE_STATE)
     {
-			ChassisSpeedRef.forward_back_ref = (rc->ch1 - 1024) / 66.0 * 2000;   //取弹模式下慢速移动
-			ChassisSpeedRef.left_right_ref = (rc->ch0 - 1024) / 66.0 * 2000;
-			ChassisSpeedRef.rotate_ref=  (rc->ch2 - 1024) /66.0*2000;
+			ChassisSpeedRef.forward_back_ref = (rc->ch1 - 1024) / 66.0 * 1000;   //取弹模式下慢速移动
+			ChassisSpeedRef.left_right_ref = (rc->ch0 - 1024) / 66.0 * 1000;
+			ChassisSpeedRef.rotate_ref=  (rc->ch2 - 1024) /66.0*1000;
+			//yawAngleTarget   -= (rc->ch2 - 1024)/6600.0 * (YAWUPLIMIT-YAWDOWNLIMIT); 
 			if(rc->s1!=2)
 			{	
-				aux_motor34_position_target += (rc->ch3 - 1024)/10;
-				MINMAX(aux_motor34_position_target,aux34_limit-12000,aux34_limit);
+				if(Hero_State==HERO_GETTING_BULLET)
+				{
+					aux_motor34_position_target += (rc->ch3 - 1024)/10;
+					MINMAX(aux_motor34_position_target,aux34_limit-12000,aux34_limit);
+				}
 			}
 			HeroRemoteGetBulletFrictionControl(&switch1,rc->s1);
 		}
@@ -250,7 +254,7 @@ void MouseKeyControlProcess(Mouse_t *mouse, Key_t *key)
 		}
 		
 		//mouse x y control
-		ChassisSpeedRef.rotate_ref += mouse->x/15.0*6000;
+		ChassisSpeedRef.rotate_ref += mouse->x/15.0*3000;
 		yawAngleTarget = -ChassisSpeedRef.rotate_ref * forward_kp / 2000;
 		
 		MouseShootControl(mouse);
@@ -261,11 +265,11 @@ void MouseKeyControlProcess(Mouse_t *mouse, Key_t *key)
 // 设置输入模式
 void SetInputMode(Remote_t *rc)
 {
-	if(rc->s2 == 1)
+	if(rc->s2 == 3)
 	{
 		inputmode = REMOTE_INPUT;
 	}
-	else if(rc->s2 == 3)
+	else if(rc->s2 == 1)
 	{
 		inputmode = KEY_MOUSE_INPUT;
 	}
@@ -399,6 +403,8 @@ void HeroModeSwitch(RemoteSwitch_t *sw, uint8_t val)
 	if(sw->switch_value1 == REMOTE_SWITCH_CHANGE_3TO2)
 	{
 		Hero_Order=HERO_GETBULLET;
+		yawAngleTarget=-40;
+		pitchAngleTarget=0;
 	}
 	if(sw->switch_value1 == REMOTE_SWITCH_CHANGE_2TO3)
 	{
@@ -423,7 +429,7 @@ void HeroRemoteGetBulletFrictionControl(RemoteSwitch_t *sw, uint8_t val)
 	}
 	if(sw->switch_value1 == REMOTE_SWITCH_CHANGE_2TO3)
 	{
-		Hero_Order=HERO_GETBULLET;
+		Hero_Order=HERO_STOP;
 	}
 }
 
