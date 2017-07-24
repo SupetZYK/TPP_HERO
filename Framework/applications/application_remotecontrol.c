@@ -28,7 +28,7 @@ else if(val>=max)\
 
 
 EMER emer = NORMAL_RUN;
-
+GMMODE GMMode = LOCK;
 
 
 //extern RampGen_t frictionRamp ;  //摩擦轮斜坡
@@ -181,7 +181,7 @@ void MouseKeyControlProcess(Mouse_t *mouse, Key_t *key)
 	{
 		
 		pitchAngleTarget -= mouse->y* MOUSE_TO_PITCH_ANGLE_INC_FACT;  //(rc->ch3 - (int16_t)REMOTE_CONTROLLER_STICK_OFFSET) * STICK_TO_PITCH_ANGLE_INC_FACT;
-		//yawAngleTarget    -= mouse->x* MOUSE_TO_YAW_ANGLE_INC_FACT;
+		if(GMMode == UNLOCK) yawAngleTarget    -= mouse->x* MOUSE_TO_YAW_ANGLE_INC_FACT;
 
 		VAL_LIMIT(mouse->x, -150, 150); 
 		VAL_LIMIT(mouse->y, -150, 150); 
@@ -254,12 +254,16 @@ void MouseKeyControlProcess(Mouse_t *mouse, Key_t *key)
 		}
 		
 		//mouse x y control
-		ChassisSpeedRef.rotate_ref += mouse->x/15.0*3000;
-		yawAngleTarget = -ChassisSpeedRef.rotate_ref * forward_kp / 2000;
-		
+		if(GMMode == LOCK)
+		{
+			ChassisSpeedRef.rotate_ref += mouse->x/15.0*3000;
+			yawAngleTarget = -ChassisSpeedRef.rotate_ref * forward_kp / 2000;
+		}
 		MouseShootControl(mouse);
 		
 		if((key->v & 0x4000) && (key->v & 0x8000)) emer = RESTART;   //手动紧急重启 V+B
+		if(key->v & 0x0400) GMMode = UNLOCK;  //解锁云台  G
+		if(key->v & 0x0200) GMMode = LOCK;    //锁定云台  F
 	}
 }
 

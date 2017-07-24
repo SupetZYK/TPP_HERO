@@ -162,4 +162,10 @@ typedef enum
 	RESTART,
 }EMER;
 extern EMER emer;
+
+typedef enum
+{
+	LOCK,
+	UNLOCK,
+}GMMODE;
 #endif
