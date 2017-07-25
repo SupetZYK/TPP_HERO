@@ -76,7 +76,7 @@ void RCProcess(RC_CtrlData_t* pRC_CtrlData){
 				{
 		//			fw_printfln("in remote mode");
 					SetEmergencyFlag(NORMAL);
-					RemoteControlProcess(&(pRC_CtrlData->rc));
+					RemoteControlProcess(&(pRC_CtrlData->rc),&(pRC_CtrlData->key));
 				}break;
 				case KEY_MOUSE_INPUT:
 				{
@@ -89,7 +89,7 @@ void RCProcess(RC_CtrlData_t* pRC_CtrlData){
 				case REMOTE_BULLET_INPUT:
 				{
 					SetEmergencyFlag(NORMAL);
-					BulletControlProcess(&(pRC_CtrlData->rc));  //取弹模式
+					BulletControlProcess(&(pRC_CtrlData->rc),&(pRC_CtrlData->key));  //取弹模式
 				}break;
 			}
 			
@@ -127,7 +127,7 @@ void Timer_1ms_lTask(void const * argument)
 //////////////////////////////遥控器控制模式处理
 extern uint8_t engineer_task_on;
 float forward_kp = 1.0 ;
-void RemoteControlProcess(Remote_t *rc)
+void RemoteControlProcess(Remote_t *rc, Key_t *key)
 {
     if(GetWorkState()!=PREPARE_STATE)
     {
@@ -144,6 +144,8 @@ void RemoteControlProcess(Remote_t *rc)
 //				yawAngleTarget   -= (rc->ch2 - 1024)/660.0 * (PITCHUPLIMIT-PITCHDOWNLIMIT); 
 //			}
 				RemoteShootControl(&switch1, rc->s1);
+			if(key->v & 0x0800)  HAL_GPIO_WritePin(camera_sw_GPIO_Port,camera_sw_Pin, GPIO_PIN_RESET); //切换摄像头  Z
+			if(key->v & 0x1000) HAL_GPIO_WritePin(camera_sw_GPIO_Port,camera_sw_Pin,  GPIO_PIN_RESET);
 		}
 		else
 		{
@@ -152,13 +154,13 @@ void RemoteControlProcess(Remote_t *rc)
 
 }
 
-void BulletControlProcess(Remote_t *rc)
+void BulletControlProcess(Remote_t *rc, Key_t* key)
 {
     if(GetWorkState()!=PREPARE_STATE)
     {
-			ChassisSpeedRef.forward_back_ref = (rc->ch1 - 1024) / 66.0 * 1000;   //取弹模式下慢速移动
+			ChassisSpeedRef.forward_back_ref = -(rc->ch1 - 1024) / 66.0 * 1000;   //取弹模式下慢速移动
 			ChassisSpeedRef.left_right_ref = (rc->ch0 - 1024) / 66.0 * 1000;
-			ChassisSpeedRef.rotate_ref=  (rc->ch2 - 1024) /66.0*1000;
+			ChassisSpeedRef.rotate_ref=  -(rc->ch2 - 1024) /66.0*1000;
 			//yawAngleTarget   -= (rc->ch2 - 1024)/6600.0 * (YAWUPLIMIT-YAWDOWNLIMIT); 
 			if(rc->s1!=2)
 			{	
@@ -169,11 +171,13 @@ void BulletControlProcess(Remote_t *rc)
 				}
 			}
 			HeroRemoteGetBulletFrictionControl(&switch1,rc->s1);
+			if(key->v & 0x0800)  HAL_GPIO_WritePin(camera_sw_GPIO_Port,camera_sw_Pin, GPIO_PIN_RESET); //切换摄像头  Z
+		if(key->v & 0x1000) HAL_GPIO_WritePin(camera_sw_GPIO_Port,camera_sw_Pin,  GPIO_PIN_RESET);
 		}
 }
 
 //键盘鼠标控制模式处理
-
+uint8_t shoot_mode=0;
 void MouseKeyControlProcess(Mouse_t *mouse, Key_t *key)
 {
 	static uint16_t forward_back_speed = 0;
@@ -266,7 +270,16 @@ void MouseKeyControlProcess(Mouse_t *mouse, Key_t *key)
 		if((key->v & 0x4000) && (key->v & 0x8000)) emer = RESTART;   //手动紧急重启 V+B
 		if(key->v & 0x0400) GMMode = UNLOCK;  //解锁云台  G
 		if(key->v & 0x0200) GMMode = LOCK;    //锁定云台  F
-		if(key->v & 0x0800)  HAL_GPIO_TogglePin(camera_sw_GPIO_Port, camera_sw_Pin); //切换摄像头  Z
+		if(key->v & 0x0800)  HAL_GPIO_WritePin(camera_sw_GPIO_Port,camera_sw_Pin, GPIO_PIN_RESET); //切换摄像头  Z
+		if(key->v & 0x1000) HAL_GPIO_WritePin(camera_sw_GPIO_Port,camera_sw_Pin,  GPIO_PIN_RESET);
+		if(key->v & 0x0100)  //R
+		{
+			shoot_mode=1;
+		}
+		else
+		{
+			shoot_mode=0;
+		}
 	}
 }
 
@@ -395,8 +408,11 @@ void RemoteShootControl(RemoteSwitch_t *sw, uint8_t val)
 			}
 			else if(sw->switch_value1 == REMOTE_SWITCH_CHANGE_3TO2)
 			{
-				SetShootState(SHOOTING);
-				ShootOnce();
+				if(Hero_State==HERO_NORMAL_STATE)
+				{
+					SetShootState(SHOOTING);
+					ShootOnce();
+				}
 			}
 			else
 			{
@@ -510,8 +526,18 @@ void MouseShootControl(Mouse_t *mouse)
 			}			
 			else if(mouse->last_press_l==0 && mouse->press_l== 1)  //按下左键，射击
 			{
-				SetShootState(SHOOTING);		
-				ShootOnce();
+				if(Hero_State==HERO_NORMAL_STATE)
+				{
+					if(shoot_mode==0)
+					{
+						SetShootState(SHOOTING);		
+						ShootOnce();
+					}
+					else if(shoot_mode==1)
+					{
+						Hero_Order=HERO_SHOOT_4;
+					}
+				}
 			}
 			else
 			{
@@ -607,11 +633,11 @@ void RemoteTaskInit(void)
 /**********************************************************
 *工作状态切换状态机
 **********************************************************/
-static uint32_t time_tick_2ms = 0;
+static uint32_t time_tick_1ms = 0;
 void WorkStateFSM(void)
 {
 	lastWorkState = workState;
-	time_tick_2ms ++;
+	time_tick_1ms ++;
 	switch(workState)
 	{
 		case PREPARE_STATE:
@@ -621,7 +647,7 @@ void WorkStateFSM(void)
 //				workState = STOP_STATE;
 //			}
 //			else 
-			if(time_tick_2ms > PREPARE_TIME_TICK_MS)
+			if(time_tick_1ms > PREPARE_TIME_TICK_MS)
 			{
 				fw_printf("Normal state\r\n");
 				workState = NORMAL_STATE;

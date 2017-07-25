@@ -52,6 +52,8 @@ extern IMUDataTypedef imu_data;
 extern float pitchRealAngle,yawRealAngle;
 extern float yawRealSpeed;
 extern double aux_motor34_position_target;
+extern float q0,q1,q2,q3;
+extern float gx, gy, gz, ax, ay, az, mx, my, mz;
 void zykProcessData()
 {	
 	//fw_printfln("ok");
@@ -262,15 +264,23 @@ void zykProcessData()
 		///////////MPU
 		else if(strcmp(buf,"MPU")==0)
 		{
-			IOPool_getNextRead(IMUIOPool, 0);
-			float realSpeed = -IOPool_pGetReadData(IMUIOPool, 0)->gYroZs;
-			float realSpeed2=imu_data.gz/32.8;
+			//IOPool_getNextRead(IMUIOPool, 0);
+			//float realSpeed = -IOPool_pGetReadData(IMUIOPool, 0)->gYroZs;
+			//float realSpeed2=imu_data.gz/32.8;
 			fw_printf("angles0 = %f | ", angles[0]);
 			fw_printf("angles1 = %f | ", angles[1]);
-			fw_printf("angles2 = %f | ", angles[2]);
-			fw_printf("z_gyro = %f | ", realSpeed);
-			fw_printf("z_gyro2= %f\r\n", realSpeed2);
-			fw_printf("========================\r\n");
+			fw_printfln("angles2 = %f | ", angles[2]);
+			//fw_printf("z_gyro = %f | ", realSpeed);
+			//fw_printf("z_gyro2= %f\r\n", realSpeed2);
+			//fw_printf("========================\r\n");
+		}
+		else if(strcmp(buf,"MPQ")==0)
+		{
+			fw_printfln("q0 = %f | q1 = %f | q2= %f | q3 = %f",q0,q1,q2,q3);
+		}
+		else if(strcmp(buf,"MPR")==0)
+		{
+			fw_printfln("ax = %f | ay = %f | az= %f | gx = %d | gy = %d | gz = %d | mx = %d | my = %d | mz = %d",ax,ay,az,imu_data.gx,imu_data.gy,imu_data.gz,imu_data.mx,imu_data.my,imu_data.mz);
 		}
 		///////////////////UPPER
 		else if(strcmp(buf,"RD1")==0)

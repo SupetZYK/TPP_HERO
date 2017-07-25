@@ -30,18 +30,22 @@ float pitchAngleTarget = 0.0;
 float pitchZeroAngle = 0;
 //底盘速度结构体，度每秒
 ChassisSpeed_Ref_t ChassisSpeedRef;
+
+//test
+float target_dir=0;
 void CMGMControlTask(void const * argument){
 	while(1){
 		osSemaphoreWait(CMGMCanRefreshSemaphoreHandle, osWaitForever);
-//	 if((GetWorkState() == STOP_STATE)  || GetWorkState() == CALI_STATE || GetWorkState() == PREPARE_STATE || GetEmergencyFlag() == EMERGENCY)   //||Is_Serious_Error()|| dead_lock_flag == 1紧急停车，编码器校准，无控制输入时都会使底盘控制停止
-//	 {
-//		 fw_printf("motor state error\r\n");
-//		 yawAngleTarget=0;
-//		 pitchAngleTarget=0;
-//		 ChassisSpeedRef.forward_back_ref=0;
-//		 ChassisSpeedRef.left_right_ref=0;
-//		 ChassisSpeedRef.rotate_ref=0;
-//	 }
+	 if((GetWorkState() == STOP_STATE)  || GetWorkState() == CALI_STATE || GetWorkState() == PREPARE_STATE || GetEmergencyFlag() == EMERGENCY)   //||Is_Serious_Error()|| dead_lock_flag == 1紧急停车，编码器校准，无控制输入时都会使底盘控制停止
+	 {
+		 //fw_printf("motor state error\r\n");
+		 yawAngleTarget=0;
+		 pitchAngleTarget=0;
+		 ChassisSpeedRef.forward_back_ref=0;
+		 ChassisSpeedRef.left_right_ref=0;
+		 ChassisSpeedRef.rotate_ref=0;
+		 target_dir=angles[0];
+	 }
 		static int32_t cnt=0;
 //	 if(GM_RUN)
 //	 {
@@ -51,6 +55,7 @@ void CMGMControlTask(void const * argument){
 		 setPitchWithAngle(pitchAngleTarget);
 //	 }
 //	if(cnt++>1){
+		//ChassisSpeedRef.rotate_ref=20*(target_dir-angles[0]);
 		setChassisWithSpeed(ChassisSpeedRef.forward_back_ref, ChassisSpeedRef.left_right_ref, ChassisSpeedRef.rotate_ref);
 		cnt=0;
 //	}

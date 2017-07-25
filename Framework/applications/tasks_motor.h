@@ -15,7 +15,7 @@ typedef __packed struct
 
 extern ChassisSpeed_Ref_t ChassisSpeedRef;
 extern float aux1_targetSpeed,aux2_targetSpeed;
-extern double aux_motor34_position_target,getBullet_angle_target;
+extern double aux_motor34_position_target,getBullet_angle_target,plate_angle_target;
 extern double aux34_limit,getBullet_limit;
 void CMGMControlTask(void const * argument);
 void AMControlTask(void const * argument);
