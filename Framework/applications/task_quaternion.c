@@ -8,13 +8,13 @@
 extern IMUDataTypedef imu_data ;
 
 //初始化IMU数据
-#define BOARD_DOWN 1   //板子正面朝下摆放
+
 
 #include "math.h"
-float q0 = 1.0f;
+float q0 = 0.0f;
 float q1 = 0.0f;
 float q2 = 0.0f;
-float q3 = 0.0f;
+float q3 = -1.0f;
 float invSqrt(float x) {
 	float halfx = 0.5f * x;
 	float y = x;
@@ -28,8 +28,8 @@ float invSqrt(float x) {
 float gx, gy, gz, ax, ay, az, mx, my, mz;
 float gYroX, gYroY, gYroZ;
 float angles[3];
-int16_t maxx = 451, maxy = 49, maxz = 840;
-int16_t minx = 216, miny = -233, minz = 500;
+int16_t maxx = 148, maxy = 40, maxz = 415;
+int16_t minx = -106, miny = -244, minz = 166;
 
 int16_t mymaxmx=-500,mymaxmy=-500,mymaxmz=-500,myminmx=500,myminmy=500,myminmz=500;
 void updateQuaternion()
@@ -51,10 +51,11 @@ void updateQuaternion()
 			gYroY = mygetqval[4];
 			gYroZ = mygetqval[5];
 			
-#define Kp 2.0f
+#define Kp 3.0f
 #define Ki 0.01f 
 #define M_PI  (float)3.1415926535
 			static uint64_t lastUpdate, now;
+			static float lastHalfT=0;
 			static float exInt, eyInt, ezInt;
 
 			float norm;
@@ -77,6 +78,10 @@ void updateQuaternion()
 			//halfT=2.5/1000;
 			now = fw_getTimeMicros();  //读取时间 单位是us   
 			halfT =  ((float)(now - lastUpdate) / 2000000.0f);
+			if(halfT>0.001)
+				halfT=lastHalfT;
+			lastHalfT=halfT;
+				
 //			if((now-lastUpdate)<100)
 //			{
 //				//halfT =  ((float)(now + (0xffffffff- lastUpdate)) / 2000000.0f);   //  uint 0.5s
@@ -99,12 +104,12 @@ void updateQuaternion()
 			mz = mygetqval[8];
 
 			//快速求平方根算法
-			norm = invSqrt(ax*ax + ay*ay + az*az);       
+			norm = invSqrt(ax*ax + ay*ay + az*az); 
 			ax = ax * norm;
 			ay = ay * norm;
 			az = az * norm;
 			//把加计的三维向量转成单位向量。
-			norm = invSqrt(mx*mx + my*my + mz*mz);          
+			norm = invSqrt(mx*mx + my*my + mz*mz);    
 			mx = mx * norm;
 			my = my * norm;
 			mz = mz * norm; 
@@ -148,7 +153,8 @@ void updateQuaternion()
 			tempq3 = q3 + (q0*gz + q1*gy - q2*gx)*halfT;  
 
 			// 四元数规范化
-			norm = invSqrt(tempq0*tempq0 + tempq1*tempq1 + tempq2*tempq2 + tempq3*tempq3);
+    	norm = invSqrt(tempq0*tempq0 + tempq1*tempq1 + tempq2*tempq2 + tempq3*tempq3);
+
 			q0 = tempq0 * norm;
 			q1 = tempq1 * norm;
 			q2 = tempq2 * norm;
@@ -160,14 +166,16 @@ void updateQuaternion()
 			q[2] = q2;
 			q[3] = q3;
 			//float angles[3];
-			angles[0] = -atan2(2 * q[1] * q[2] + 2 * q[0] * q[3], -2 * q[2]*q[2] - 2 * q[3] * q[3] + 1)* 180/M_PI; // yaw        -pi----pi
-			angles[1] = -asin(-2 * q[1] * q[3] + 2 * q[0] * q[2])* 180/M_PI; // pitch    -pi/2    --- pi/2 
+			angles[0] = atan2(2 * q[1] * q[2] + 2 * q[0] * q[3], -2 * q[2]*q[2] - 2 * q[3] * q[3] + 1)* 180/M_PI; // yaw        -pi----pi
+			angles[1] = asin(-2 * q[1] * q[3] + 2 * q[0] * q[2])* 180/M_PI; // pitch    -pi/2    --- pi/2 
 			angles[2] = atan2(2 * q[2] * q[3] + 2 * q[0] * q[1], -2 * q[1] * q[1] - 2 * q[2] * q[2] + 1)* 180/M_PI; // roll       -pi-----pi  
 
 			static int countPrint = 0;
-			if(countPrint > 500)
+			if(countPrint > 5000)
 			{
 				countPrint = 0;
+//				fw_printfln("norm is %f",norm);
+//				fw_printfln("half t is %f", halfT);
 //				if(imu_data.mx>mymaxmx) mymaxmx=imu_data.mx;
 //				if(imu_data.my>mymaxmy) mymaxmy=imu_data.my;
 //				if(imu_data.mz>mymaxmz) mymaxmz=imu_data.mz;
