@@ -160,8 +160,8 @@ void BulletControlProcess(Remote_t *rc,Key_t *key)
     if(GetWorkState()!=PREPARE_STATE)
     {
 			ChassisSpeedRef.forward_back_ref = -(rc->ch1 - 1024) / 66.0 * 1000;   //取弹模式下慢速移动
-			ChassisSpeedRef.left_right_ref = -(rc->ch0 - 1024) / 66.0 * 1000;
-			ChassisSpeedRef.rotate_ref=  (rc->ch2 - 1024) /66.0*1000;
+			ChassisSpeedRef.left_right_ref = (rc->ch0 - 1024) / 66.0 * 1000;
+			ChassisSpeedRef.rotate_ref=  -(rc->ch2 - 1024) /66.0*1000;
 			//yawAngleTarget   -= (rc->ch2 - 1024)/6600.0 * (YAWUPLIMIT-YAWDOWNLIMIT); 
 			if(rc->s1!=2)
 			{	
