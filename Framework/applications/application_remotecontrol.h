@@ -132,7 +132,7 @@ void RemoteTaskInit(void);
 //调用的函数声明
 Shoot_State_e GetShootState();
 void MouseKeyControlProcess(Mouse_t *mouse, Key_t *key);
-void RemoteControlProcess(Remote_t *rc);
+void RemoteControlProcess(Remote_t *rc,Key_t *key);
 void RemoteShootControl(RemoteSwitch_t *sw, uint8_t val);
 void SetFrictionWheelSpeed(uint16_t x);
 void MouseShootControl(Mouse_t *mouse);
@@ -150,7 +150,7 @@ void StartBulletFrictionWheel();
 void StopBulletFrictionWheel();
 
 void HeroModeSwitch(RemoteSwitch_t *sw, uint8_t val);
-void BulletControlProcess(Remote_t *rc);
+void BulletControlProcess(Remote_t *rc,Key_t *key);
 void GetRemoteSwitchAction(RemoteSwitch_t *sw, uint8_t val);
 void HeroRemoteGetBulletFrictionControl(RemoteSwitch_t *sw, uint8_t val);
 extern float forward_kp;

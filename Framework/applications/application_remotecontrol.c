@@ -76,7 +76,7 @@ void RCProcess(RC_CtrlData_t* pRC_CtrlData){
 				{
 		//			fw_printfln("in remote mode");
 					SetEmergencyFlag(NORMAL);
-					RemoteControlProcess(&(pRC_CtrlData->rc));
+					RemoteControlProcess(&(pRC_CtrlData->rc),&(pRC_CtrlData->key));
 				}break;
 				case KEY_MOUSE_INPUT:
 				{
@@ -89,7 +89,7 @@ void RCProcess(RC_CtrlData_t* pRC_CtrlData){
 				case REMOTE_BULLET_INPUT:
 				{
 					SetEmergencyFlag(NORMAL);
-					BulletControlProcess(&(pRC_CtrlData->rc));  //取弹模式
+					BulletControlProcess(&(pRC_CtrlData->rc),&(pRC_CtrlData->key));  //取弹模式
 				}break;
 			}
 			
@@ -127,7 +127,7 @@ void Timer_1ms_lTask(void const * argument)
 //////////////////////////////遥控器控制模式处理
 extern uint8_t engineer_task_on;
 float forward_kp = 1.0 ;
-void RemoteControlProcess(Remote_t *rc)
+void RemoteControlProcess(Remote_t *rc,Key_t *key)
 {
     if(GetWorkState()!=PREPARE_STATE)
     {
@@ -144,6 +144,9 @@ void RemoteControlProcess(Remote_t *rc)
 //				yawAngleTarget   -= (rc->ch2 - 1024)/660.0 * (PITCHUPLIMIT-PITCHDOWNLIMIT); 
 //			}
 				RemoteShootControl(&switch1, rc->s1);
+			
+				if(key->v & 0x0800)  HAL_GPIO_WritePin(camera_sw_GPIO_Port, camera_sw_Pin,GPIO_PIN_SET); //摄像头1  Z
+				if(key->v & 0x1000)  HAL_GPIO_WritePin(camera_sw_GPIO_Port, camera_sw_Pin,GPIO_PIN_RESET); //摄像头2  X
 		}
 		else
 		{
@@ -152,7 +155,7 @@ void RemoteControlProcess(Remote_t *rc)
 
 }
 
-void BulletControlProcess(Remote_t *rc)
+void BulletControlProcess(Remote_t *rc,Key_t *key)
 {
     if(GetWorkState()!=PREPARE_STATE)
     {
@@ -170,6 +173,9 @@ void BulletControlProcess(Remote_t *rc)
 			}
 			HeroRemoteGetBulletFrictionControl(&switch1,rc->s1);
 		}
+		
+		if(key->v & 0x0800)  HAL_GPIO_WritePin(camera_sw_GPIO_Port, camera_sw_Pin,GPIO_PIN_SET); //摄像头1  Z
+		if(key->v & 0x1000)  HAL_GPIO_WritePin(camera_sw_GPIO_Port, camera_sw_Pin,GPIO_PIN_RESET); //摄像头2  X
 }
 
 //键盘鼠标控制模式处理
@@ -266,7 +272,9 @@ void MouseKeyControlProcess(Mouse_t *mouse, Key_t *key)
 		if((key->v & 0x4000) && (key->v & 0x8000)) emer = RESTART;   //手动紧急重启 V+B
 		if(key->v & 0x0400) GMMode = UNLOCK;  //解锁云台  G
 		if(key->v & 0x0200) GMMode = LOCK;    //锁定云台  F
-		if(key->v & 0x0800)  HAL_GPIO_TogglePin(camera_sw_GPIO_Port, camera_sw_Pin); //切换摄像头  Z
+		//if(key->v & 0x0800)  HAL_GPIO_TogglePin(camera_sw_GPIO_Port, camera_sw_Pin); //切换摄像头  Z
+		if(key->v & 0x0800)  HAL_GPIO_WritePin(camera_sw_GPIO_Port, camera_sw_Pin,GPIO_PIN_SET); //摄像头1  Z
+		if(key->v & 0x1000)  HAL_GPIO_WritePin(camera_sw_GPIO_Port, camera_sw_Pin,GPIO_PIN_RESET); //摄像头2  X
 	}
 }
 
