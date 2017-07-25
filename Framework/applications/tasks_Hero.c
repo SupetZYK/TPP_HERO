@@ -13,6 +13,7 @@ uint8_t Hero_Stretch(float value, uint32_t time_milis);
 uint8_t Hero_Lift(float value, uint32_t time_milis);
 void Hero_Prepare_Get_Bullet();
 void Hero_Auto_Get_Bullet();
+void Hero_Shoot_4();
 void HeroTask(void const * argument){
 	while(1)
 	{
@@ -30,11 +31,15 @@ void HeroTask(void const * argument){
 			{
 				Hero_Recover();
 			}break;
-
+			case HERO_SHOOT_4:
+			{
+				Hero_Shoot_4();
+			}break;
 			case HERO_STANDBY:
 			{
 				osDelay(10);
 			}break;
+			
 			
 		}
 	}
@@ -221,4 +226,16 @@ void Hero_Recover()
 		HeroForceLift(aux34_limit,1000);
 		HeroForceStretch(getBullet_limit,1000);
 	}
+}
+
+void Hero_Shoot_4()
+{
+	Hero_Order=HERO_STANDBY;
+	Hero_State=HERO_SHOOTING;
+	for(int i=0;i<4;++i)
+	{
+		plate_angle_target-=90.0*95.8;
+		osDelay(200);
+	}
+	Hero_State=HERO_NORMAL_STATE;
 }

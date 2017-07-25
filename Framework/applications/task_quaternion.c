@@ -28,8 +28,8 @@ float invSqrt(float x) {
 float gx, gy, gz, ax, ay, az, mx, my, mz;
 float gYroX, gYroY, gYroZ;
 float angles[3];
-int16_t maxx = 145, maxy = 10, maxz = 415;
-int16_t minx = -98, miny = -321, minz = 160;
+int16_t maxx = 451, maxy = 49, maxz = 840;
+int16_t minx = 216, miny = -233, minz = 500;
 
 int16_t mymaxmx=-500,mymaxmy=-500,mymaxmz=-500,myminmx=500,myminmy=500,myminmz=500;
 void updateQuaternion()
@@ -123,13 +123,13 @@ void updateQuaternion()
 			wy = 2.0f*bx*(q1q2 - q0q3) + 2.0f*bz*(q0q1 + q2q3);
 			wz = 2.0f*bx*(q0q2 + q1q3) + 2.0f*bz*(0.5f - q1q1 - q2q2);  
 			// error is sum of cross product between reference direction of fields and direction measured by sensors
-//			ex = (ay*vz - az*vy) + (my*wz - mz*wy);
-//			ey = (az*vx - ax*vz) + (mz*wx - mx*wz);
-//			ez = (ax*vy - ay*vx) + (mx*wy - my*wx);
+			ex = (ay*vz - az*vy) + (my*wz - mz*wy);
+			ey = (az*vx - ax*vz) + (mz*wx - mx*wz);
+			ez = (ax*vy - ay*vx) + (mx*wy - my*wx);
 			
-			ex = (ay*vz - az*vy);
-			ey = (az*vx - ax*vz);
-			ez = (ax*vy - ay*vx);
+//			ex = (ay*vz - az*vy);
+//			ey = (az*vx - ax*vz);
+//			ez = (ax*vy - ay*vx);
 
 			if(ex != 0.0f && ey != 0.0f && ez != 0.0f)
 			{

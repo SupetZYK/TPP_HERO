@@ -173,7 +173,7 @@ void BulletControlProcess(Remote_t *rc)
 }
 
 //键盘鼠标控制模式处理
-
+uint8_t shoot_mode=0;
 void MouseKeyControlProcess(Mouse_t *mouse, Key_t *key)
 {
 	static uint16_t forward_back_speed = 0;
@@ -267,6 +267,14 @@ void MouseKeyControlProcess(Mouse_t *mouse, Key_t *key)
 		if(key->v & 0x0400) GMMode = UNLOCK;  //解锁云台  G
 		if(key->v & 0x0200) GMMode = LOCK;    //锁定云台  F
 		if(key->v & 0x0800)  HAL_GPIO_TogglePin(camera_sw_GPIO_Port, camera_sw_Pin); //切换摄像头  Z
+		if(key->v & 0x0100)
+		{
+			shoot_mode=1;
+		}
+		else
+		{
+			shoot_mode=0;
+		}
 	}
 }
 
@@ -395,8 +403,11 @@ void RemoteShootControl(RemoteSwitch_t *sw, uint8_t val)
 			}
 			else if(sw->switch_value1 == REMOTE_SWITCH_CHANGE_3TO2)
 			{
-				SetShootState(SHOOTING);
-				ShootOnce();
+				if(Hero_State==HERO_NORMAL_STATE)
+				{
+					SetShootState(SHOOTING);
+					ShootOnce();
+				}
 			}
 			else
 			{
@@ -510,8 +521,18 @@ void MouseShootControl(Mouse_t *mouse)
 			}			
 			else if(mouse->last_press_l==0 && mouse->press_l== 1)  //按下左键，射击
 			{
-				SetShootState(SHOOTING);		
-				ShootOnce();
+				if(Hero_State==HERO_NORMAL_STATE)
+				{
+					if(shoot_mode==0)
+					{
+						SetShootState(SHOOTING);		
+						ShootOnce();
+					}
+					else if(shoot_mode==1)
+					{
+						Hero_Order=HERO_SHOOT_4;
+					}
+				}
 			}
 			else
 			{

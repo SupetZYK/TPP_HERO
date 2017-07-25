@@ -10,6 +10,7 @@ typedef enum
 	HERO_GETTING_BULLET=3,
 	HERO_AUTO_GETTING_BULLET=4,
 	HERO_RECOVERING =5,
+	HERO_SHOOTING =6,
 }Hero_State_t;
 
 typedef enum
@@ -18,6 +19,7 @@ typedef enum
 	HERO_AUTO_GETBULLET=2,
 	HERO_STOP=3,
 	HERO_STANDBY=4,
+	HERO_SHOOT_4=5,
 }Hero_Order_t;
 
 void Hero_Prepare_Get_Bullet();
