@@ -232,10 +232,10 @@ void Hero_Shoot_4()
 {
 	Hero_Order=HERO_STANDBY;
 	Hero_State=HERO_SHOOTING;
-	for(int i=0;i<4;++i)
+	for(int i=0;i<3;++i)
 	{
 		plate_angle_target-=90.0*95.8;
-		osDelay(200);
+		osDelay(300);
 	}
 	Hero_State=HERO_NORMAL_STATE;
 }
