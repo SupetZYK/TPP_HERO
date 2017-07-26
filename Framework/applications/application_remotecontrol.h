@@ -168,4 +168,6 @@ typedef enum
 	LOCK,
 	UNLOCK,
 }GMMODE;
+
+extern int redir_mode;
 #endif

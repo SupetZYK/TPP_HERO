@@ -9,7 +9,7 @@
 #include "drivers_imu_low.h"
 //PID_INIT(Kp, Ki, Kd, KpMax, KiMax, KdMax, OutputMax)
 PID_Regulator_t yawPositionPID = PID_INIT(8.0, 0.0, 0.5, 10000.0, 10000.0, 10000.0, 10000.0);
-PID_Regulator_t yawSpeedPID = PID_INIT(60.0, 0.0, 5.0, 10000.0, 10000.0, 10000.0, 4900.0);
+PID_Regulator_t yawSpeedPID = PID_INIT(80.0, 0.0, 5.0, 10000.0, 10000.0, 10000.0, 4900.0);
 
 PID_Regulator_t pitchPositionPID = PID_INIT(8, 0.00, 0.5, 10000.0, 10000.0, 10000.0, 10000.0);
 PID_Regulator_t pitchSpeedPID = PID_INIT(60.0, 0.0, 1.0, 10000.0, 10000.0, 10000.0, 4900.0);

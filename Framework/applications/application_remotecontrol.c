@@ -31,7 +31,7 @@ else if(val>=max)\
 
 EMER emer = NORMAL_RUN;
 GMMODE GMMode = LOCK;
-
+int redir_mode = 0;
 
 //extern RampGen_t frictionRamp ;  //Ä¦²ÁÂÖÐ±ÆÂ
 //extern RampGen_t LRSpeedRamp ;   //mouse×óÓÒÒÆ¶¯Ð±ÆÂ
@@ -279,6 +279,15 @@ void MouseKeyControlProcess(Mouse_t *mouse, Key_t *key)
 		else
 		{
 			shoot_mode=0;
+		}
+		
+		if(key->v & 0x2000)  //C
+		{
+			redir_mode=1;
+		}
+		else
+		{
+			redir_mode=0;
 		}
 	}
 }

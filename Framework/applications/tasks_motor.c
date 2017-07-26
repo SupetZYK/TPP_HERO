@@ -136,7 +136,10 @@ void ShootOnce()
 	static uint64_t last_shoot_time=0;
 	uint64_t t=fw_getTimeMicros();
 	if(t-last_shoot_time>200000)
-		plate_angle_target-=90.0*95.8;
+	{
+		if(redir_mode == 1) plate_angle_target+=90.0*95.8;
+		else plate_angle_target-=90.0*95.8;
+	}
 	last_shoot_time=t;
 	SetShootState(NOSHOOTING);
 }
