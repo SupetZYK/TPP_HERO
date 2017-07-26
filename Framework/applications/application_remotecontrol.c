@@ -144,7 +144,7 @@ void RemoteControlProcess(Remote_t *rc, Key_t *key)
 //				yawAngleTarget   -= (rc->ch2 - 1024)/660.0 * (PITCHUPLIMIT-PITCHDOWNLIMIT); 
 //			}
 				RemoteShootControl(&switch1, rc->s1);
-			if(key->v & 0x0800)  HAL_GPIO_WritePin(camera_sw_GPIO_Port,camera_sw_Pin, GPIO_PIN_RESET); //ÇÐ»»ÉãÏñÍ·  Z
+			if(key->v & 0x0800)  HAL_GPIO_WritePin(camera_sw_GPIO_Port,camera_sw_Pin, GPIO_PIN_SET); //ÇÐ»»ÉãÏñÍ·  Z
 			if(key->v & 0x1000) HAL_GPIO_WritePin(camera_sw_GPIO_Port,camera_sw_Pin,  GPIO_PIN_RESET);
 		}
 		else
@@ -171,7 +171,7 @@ void BulletControlProcess(Remote_t *rc, Key_t* key)
 				}
 			}
 			HeroRemoteGetBulletFrictionControl(&switch1,rc->s1);
-			if(key->v & 0x0800)  HAL_GPIO_WritePin(camera_sw_GPIO_Port,camera_sw_Pin, GPIO_PIN_RESET); //ÇÐ»»ÉãÏñÍ·  Z
+			if(key->v & 0x0800)  HAL_GPIO_WritePin(camera_sw_GPIO_Port,camera_sw_Pin, GPIO_PIN_SET); //ÇÐ»»ÉãÏñÍ·  Z
 		if(key->v & 0x1000) HAL_GPIO_WritePin(camera_sw_GPIO_Port,camera_sw_Pin,  GPIO_PIN_RESET);
 		}
 }
@@ -270,7 +270,7 @@ void MouseKeyControlProcess(Mouse_t *mouse, Key_t *key)
 		if((key->v & 0x4000) && (key->v & 0x8000)) emer = RESTART;   //ÊÖ¶¯½ô¼±ÖØÆô V+B
 		if(key->v & 0x0400) GMMode = UNLOCK;  //½âËøÔÆÌ¨  G
 		if(key->v & 0x0200) GMMode = LOCK;    //Ëø¶¨ÔÆÌ¨  F
-		if(key->v & 0x0800)  HAL_GPIO_WritePin(camera_sw_GPIO_Port,camera_sw_Pin, GPIO_PIN_RESET); //ÇÐ»»ÉãÏñÍ·  Z
+		if(key->v & 0x0800)  HAL_GPIO_WritePin(camera_sw_GPIO_Port,camera_sw_Pin, GPIO_PIN_SET); //ÇÐ»»ÉãÏñÍ·  Z
 		if(key->v & 0x1000) HAL_GPIO_WritePin(camera_sw_GPIO_Port,camera_sw_Pin,  GPIO_PIN_RESET);
 		if(key->v & 0x0100)  //R
 		{

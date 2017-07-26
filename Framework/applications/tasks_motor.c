@@ -104,8 +104,8 @@ void AMControlTask(void const * argument){
 	//			 aux_motor2_position_target=0;
 	//			 aux_motor3_position_target=0;
 	//			 aux_motor4_position_target=0;
-			 aux1_targetSpeed=0;
-			 aux2_targetSpeed=0;
+			 //aux1_targetSpeed=0;
+			 //aux2_targetSpeed=0;
 			 //continue;
 		 }
 		 
