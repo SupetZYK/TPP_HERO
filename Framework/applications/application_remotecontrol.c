@@ -193,13 +193,13 @@ void MouseKeyControlProcess(Mouse_t *mouse, Key_t *key)
 		VAL_LIMIT(mouse->y, -150, 150); 
 		
 		//speed mode: normal speed/high speed
-		if(key->v & 0x10)
+		if(key->v & 0x10)     //shift
 		{
 			forward_back_speed =  HIGH_FORWARD_BACK_SPEED;
 			left_right_speed = HIGH_LEFT_RIGHT_SPEED;
 			rotate_speed=HIGH_ROTATE_SPEED;
 		}
-		else if(key->v & 0x20)
+		else if(key->v & 0x20)  //ctrl
 		{
 			forward_back_speed=LOW_FORWARD_BACK_SPEED;
 			left_right_speed=LOW_LEFT_RIGHT_SPEED;
