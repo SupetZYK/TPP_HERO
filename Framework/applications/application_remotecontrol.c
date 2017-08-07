@@ -140,7 +140,8 @@ void RemoteControlProcess(Remote_t *rc, Key_t *key)
 //					aux1_targetSpeed=(-(rc->ch1 - 1024) - (rc->ch2-1024) ) /66.0*5000;
 //					aux2_targetSpeed=(+rc->ch1 - 1024 - (rc->ch2-1024) ) /66.0*5000;
 //			if(GetShootMode() == MANUL){  
-				pitchAngleTarget += (rc->ch3 - 1024)/6600.0 * (PITCHUPLIMIT-PITCHDOWNLIMIT);
+				if(rc->ch3-1024<-10 || rc->ch3-1024>10)
+					pitchAngleTarget += (rc->ch3 - 1024)/6600.0 * (PITCHUPLIMIT-PITCHDOWNLIMIT);
 //				yawAngleTarget   -= (rc->ch2 - 1024)/660.0 * (PITCHUPLIMIT-PITCHDOWNLIMIT); 
 //			}
 				RemoteShootControl(&switch1, rc->s1);
@@ -162,17 +163,23 @@ void BulletControlProcess(Remote_t *rc, Key_t* key)
 			ChassisSpeedRef.left_right_ref = (rc->ch0 - 1024) / 66.0 * 1000;
 			ChassisSpeedRef.rotate_ref=  -(rc->ch2 - 1024) /66.0*1000;
 			//yawAngleTarget   -= (rc->ch2 - 1024)/6600.0 * (YAWUPLIMIT-YAWDOWNLIMIT); 
-			if(rc->s1!=2)
-			{	
+			
 				if(Hero_State==HERO_GETTING_BULLET)
 				{
-					aux_motor34_position_target += (rc->ch3 - 1024)/10;
+					if(rc->ch3-1024<-10 || rc->ch3-1024>10)
+						aux_motor34_position_target += (rc->ch3 - 1024);
 					MINMAX(aux_motor34_position_target,aux34_limit-12000,aux34_limit);
+					aut_get_bullet_base_height=aux_motor34_position_target;
 				}
-			}
+				if(Hero_State==HERO_AUTO_GETTING_BULLET)
+				{
+					if(rc->ch3-1024<-10 || rc->ch3-1024>10)
+						aut_get_bullet_base_height += (rc->ch3 - 1024);
+					MINMAX(aut_get_bullet_base_height,aux34_limit-5000,aux34_limit);
+				}
 			HeroRemoteGetBulletFrictionControl(&switch1,rc->s1);
 			if(key->v & 0x0800)  HAL_GPIO_WritePin(camera_sw_GPIO_Port,camera_sw_Pin, GPIO_PIN_SET); //ÇÐ»»ÉãÏñÍ·  Z
-		if(key->v & 0x1000) HAL_GPIO_WritePin(camera_sw_GPIO_Port,camera_sw_Pin,  GPIO_PIN_RESET);
+			if(key->v & 0x1000) HAL_GPIO_WritePin(camera_sw_GPIO_Port,camera_sw_Pin,  GPIO_PIN_RESET);
 		}
 }
 
@@ -420,7 +427,8 @@ void RemoteShootControl(RemoteSwitch_t *sw, uint8_t val)
 				if(Hero_State==HERO_NORMAL_STATE)
 				{
 					SetShootState(SHOOTING);
-					ShootOnce();
+					//ShootOnce();
+					Hero_Order=HERO_SHOOT_1;
 				}
 			}
 			else
@@ -463,7 +471,7 @@ void HeroRemoteGetBulletFrictionControl(RemoteSwitch_t *sw, uint8_t val)
 	}
 	if(sw->switch_value1 == REMOTE_SWITCH_CHANGE_2TO3)
 	{
-		Hero_Order=HERO_STOP;
+		Hero_Order=HERO_STOP_AUTO_GETBULLET;
 	}
 }
 
@@ -540,7 +548,8 @@ void MouseShootControl(Mouse_t *mouse)
 					if(shoot_mode==0)
 					{
 						SetShootState(SHOOTING);		
-						ShootOnce();
+						//ShootOnce();
+						Hero_Order=HERO_SHOOT_1;
 					}
 					else if(shoot_mode==1)
 					{

@@ -19,7 +19,9 @@ typedef enum
 	HERO_AUTO_GETBULLET=2,
 	HERO_STOP=3,
 	HERO_STANDBY=4,
-	HERO_SHOOT_4=5,
+	HERO_SHOOT_1=5,
+	HERO_SHOOT_4=6,
+	HERO_STOP_AUTO_GETBULLET=7,
 }Hero_Order_t;
 
 void Hero_Prepare_Get_Bullet();
@@ -27,6 +29,6 @@ void Hero_Recover();
 
 extern Hero_Order_t Hero_Order;
 extern Hero_State_t Hero_State;
-
+extern double aut_get_bullet_base_height;
 void HeroTask(void const * argument);
 #endif

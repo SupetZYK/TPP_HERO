@@ -1,6 +1,7 @@
 #include "application_auxmotorcontrol.h"
 
 #include "drivers_canmotor_user.h"
+
 #include "application_pidfunc.h"
 #include "application_setmotor.h"
 #include "utilities_debug.h"
@@ -11,9 +12,9 @@ PID_Regulator_t getBulletPositionPID = PID_INIT(6.0, 0.0, 0.0, 1000000.0, 100000
 PID_Regulator_t getBulletSpeedPID = PID_INIT(1.0, 0.0, 0.0, 10000.0, 10000.0, 10000.0, 4900.0);//0.0, 0.00003
 
 PID_Regulator_t UDFLPositionPID = PID_INIT(5.0, 0.0, 0.0, 1000000.0, 1000000.0, 1000000.0, 100000.0);
-PID_Regulator_t UDFLSpeedPID = PID_INIT(1.0, 0.0, 0.0, 30000.0, 30000.0, 30000.0, 30000.0);
+PID_Regulator_t UDFLSpeedPID = PID_INIT(1.0, 0.0, 0.0, 35000.0, 30000.0, 30000.0, 32000.0);
 PID_Regulator_t UDFRPositionPID = PID_INIT(20.0, 0.0, 0.0, 1000000.0, 1000000.0, 1000000.0, 100000.0);
-PID_Regulator_t UDFRSpeedPID = PID_INIT(1.0, 0.0, 0.0, 30000.0, 30000.0, 30000.0, 30000.0);
+PID_Regulator_t UDFRSpeedPID = PID_INIT(1.0, 0.0, 0.0, 35000.0, 30000.0, 30000.0, 32000.0);
 PID_Regulator_t UDBLPositionPID = PID_INIT(20.0, 0.0, 0.0, 1000000.0, 1000000.0, 1000000.0, 100000.0);
 PID_Regulator_t UDBLSpeedPID = PID_INIT(1.0, 0.0, 0.0, 10000.0, 10000.0, 10000.0, 8000.0);
 PID_Regulator_t UDBRPositionPID = PID_INIT(20.0, 0.0, 0.0, 1000000.0, 1000000.0, 1000000.0, 100000.0);
@@ -264,7 +265,7 @@ void setAux4WithAngle(double angle)
 		setMotorWithPositionSpeedPID(AM1UDBR, &UDBRPositionPID, &UDBRSpeedPID, angle, aux4_realAngle, realSpeed);
 	}
 }
-extern double aux_motor3_zero_angle,aux_motor4_zero_angle,getBullet_zero_angle;
+extern double aux_motor3_zero_angle,aux_motor4_zero_angle,getBullet_zero_angle,plate_zero_angle;
 double GetAuxMotorRealAngle(uint8_t aux_motor_index)
 {
 	switch(aux_motor_index)
@@ -277,6 +278,8 @@ double GetAuxMotorRealAngle(uint8_t aux_motor_index)
 			return aux3_realAngle - aux_motor3_zero_angle;
 		case 4:
 			return aux4_realAngle - aux_motor4_zero_angle;
+		case 5:
+			return plateRealAngle - plate_zero_angle;
 		case 6:
 			return getBulletRealAngle-getBullet_zero_angle;
 		default:

@@ -3,6 +3,7 @@
 #include "cmsis_os.h"
 #include "utilities_debug.h"
 #include "application_auxmotorcontrol.h"
+#include "math.h"
 #include "application_remotecontrol.h"
 Hero_Order_t Hero_Order=HERO_STANDBY;
 Hero_State_t Hero_State=HERO_NORMAL_STATE;
@@ -13,7 +14,11 @@ uint8_t Hero_Stretch(float value, uint32_t time_milis);
 uint8_t Hero_Lift(float value, uint32_t time_milis);
 void Hero_Prepare_Get_Bullet();
 void Hero_Auto_Get_Bullet();
+void Hero_Shoot_1();
 void Hero_Shoot_4();
+void Stuck_Process();
+void Hero_Stop_Auto_Get_Bullet();
+
 void HeroTask(void const * argument){
 	while(1)
 	{
@@ -31,13 +36,22 @@ void HeroTask(void const * argument){
 			{
 				Hero_Recover();
 			}break;
+			case HERO_STOP_AUTO_GETBULLET:
+			{
+				Hero_Stop_Auto_Get_Bullet();
+			}break;
+			case HERO_SHOOT_1:
+			{
+				Hero_Shoot_1();
+			}break;
 			case HERO_SHOOT_4:
 			{
 				Hero_Shoot_4();
 			}break;
 			case HERO_STANDBY:
 			{
-				osDelay(10);
+				Stuck_Process();
+				osDelay(1);
 			}break;
 			
 			
@@ -60,6 +74,7 @@ void Hero_Prepare_Get_Bullet()
 }
 
 uint8_t Hero_Strech_and_Lift(float stretch_valu,float lift_value,uint32_t time_milis);
+double aut_get_bullet_base_height;
 void Hero_Auto_Get_Bullet()
 {
 	Hero_Order=HERO_STANDBY;
@@ -70,14 +85,14 @@ void Hero_Auto_Get_Bullet()
 		while(1)
 		{
 			StopBulletFrictionWheel();
-			if(!Hero_Strech_and_Lift(getBullet_limit-15000,aux34_limit,300)) break;
+			if(!Hero_Strech_and_Lift(getBullet_limit-15000,aut_get_bullet_base_height-4000,300)) break;
 			StartBulletFrictionWheel();
 //			if(!Hero_Strech_and_Lift(getBullet_limit-14000,aux34_limit-800,350)) break;
 //			if(!Hero_Strech_and_Lift(getBullet_limit-12000,aux34_limit-2400,350)) break;
 //			if(!Hero_Strech_and_Lift(getBullet_limit-9000,aux34_limit-4800,350)) break;
 //			if(!Hero_Strech_and_Lift(getBullet_limit-5000,aux34_limit-8000,350)) break;
-			if(!Hero_Strech_and_Lift(getBullet_limit-10000,aux34_limit-8000,1500)) break;
-			if(!Hero_Strech_and_Lift(getBullet_limit,aux34_limit-12000,1500)) break; 
+			if(!Hero_Strech_and_Lift(getBullet_limit-10000,aut_get_bullet_base_height-8000,1500)) break;
+			if(!Hero_Strech_and_Lift(getBullet_limit,aut_get_bullet_base_height-12000,1500)) break; 
 		}
 		fw_printfln("end auto move!");
 	}
@@ -141,6 +156,7 @@ uint8_t Hero_Lift(float value, uint32_t time_milis)
 		}
 		osDelay(1);
 	}
+	aux_motor34_position_target=value;
 	uint16_t cnt=0;
 	while((GetAuxMotorRealAngle(3)-value) > 2000 || (GetAuxMotorRealAngle(3)-value)<-2000)
 	{
@@ -176,6 +192,11 @@ uint8_t Hero_Strech_and_Lift(float stretch_value,float lift_value,uint32_t time_
 			fw_printfln("stop called when lift and stretch!");
 			return 0;
 		}
+		if(Hero_Order==HERO_STOP_AUTO_GETBULLET)
+		{	
+			fw_printfln("stop called when lift and stretch!");
+			return 0;
+		}
 		osDelay(1);
 	}
 	return 1;
@@ -205,37 +226,78 @@ void HeroForceStretch(float value, uint32_t time_milis)
 	getBullet_angle_target=value;
 }
 
-
-//Ö´ÐÐ»Ö¸´¶¯×÷£¬ÉìËõ£¬½µÂä£¬¹Ø±ÕÄ¦²ÁÂÖ
-void Hero_Recover()
+void Hero_Stop_Auto_Get_Bullet()
 {
-	if(Hero_State!=HERO_AUTO_GETTING_BULLET)
-	{
-		Hero_Order=HERO_STANDBY;
-		Hero_State=HERO_RECOVERING;
-		StopBulletFrictionWheel();
-		HeroForceLift(aux34_limit,1000);
-		HeroForceStretch(0,1000);
-		HeroForceLift(0,2000);
-		Hero_State=HERO_NORMAL_STATE;
-	}
-	else
-	{
+		//StopBulletFrictionWheel();
 		Hero_Order=HERO_GETBULLET;
 		Hero_State=HERO_GETTING_BULLET;
 		HeroForceLift(aux34_limit,1000);
 		HeroForceStretch(getBullet_limit,1000);
-	}
 }
-
-void Hero_Shoot_4()
+//Ö´ÐÐ»Ö¸´¶¯×÷£¬ÉìËõ£¬½µÂä£¬¹Ø±ÕÄ¦²ÁÂÖ
+void Hero_Recover()
+{
+		Hero_Order=HERO_STANDBY;
+		Hero_State=HERO_RECOVERING;
+		StopBulletFrictionWheel();
+		HeroForceLift(aux34_limit,500);
+		HeroForceStretch(0,1500);
+		HeroForceLift(0,2000);
+		Hero_State=HERO_NORMAL_STATE;
+}
+void Hero_Shoot_1()
 {
 	Hero_Order=HERO_STANDBY;
+	Hero_State=HERO_SHOOTING;
+	plate_angle_target-=90.0*95.8;
+	osDelay(300);
+	
+	Hero_Order=HERO_STANDBY;
+	Hero_State=HERO_NORMAL_STATE;
+}
+void Hero_Shoot_4()
+{
 	Hero_State=HERO_SHOOTING;
 	for(int i=0;i<3;++i)
 	{
 		plate_angle_target-=90.0*95.8;
 		osDelay(300);
 	}
+	Hero_Order=HERO_STANDBY;
 	Hero_State=HERO_NORMAL_STATE;
+}
+
+void Stuck_Process()
+{
+	static int16_t cnt1=0,cnt2=0;
+	if((GetAuxMotorRealAngle(5)-plate_angle_target)>10*95.8)
+	{
+		if(cnt1++>100)
+		{
+			fw_printfln("Stuck! target: %f, real: %f", plate_angle_target/98.5, GetAuxMotorRealAngle(5)/98.5);
+			plate_angle_target+=90.0*95.8;
+			cnt1=0;
+			osDelay(300);
+			
+		}
+	}
+	else
+	{
+		cnt1=0;
+	}
+	if((GetAuxMotorRealAngle(5)-plate_angle_target)<-10*98.5)
+	{
+		if(cnt2++>100)
+		{
+			fw_printfln("Stuck! target: %f, real: %f", plate_angle_target/98.5, GetAuxMotorRealAngle(5)/98.5);
+			plate_angle_target-=90.0*95.8;
+			cnt2=0;
+			osDelay(300);
+			
+		}
+	}
+	else
+	{
+		cnt2=0;
+	}
 }

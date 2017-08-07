@@ -78,11 +78,13 @@ float aux1_targetSpeed=0;
 float aux2_targetSpeed=0;
 
 double plate_angle_target=0; //aux5
+double plate_zero_angle=0;
+
 double getBullet_angle_target=0;//aux6
 double getBullet_zero_angle=0;
 
-double aux34_limit = 36000;
-double getBullet_limit=50000;
+double aux34_limit = 38500;
+double getBullet_limit=56000;
 uint8_t aux_run=0;
 void AMControlTask(void const * argument){
 	while(1){
@@ -92,9 +94,11 @@ void AMControlTask(void const * argument){
 		 {
 			 IOPool_getNextRead(AMUDBLRxIOPool, 0);
 			 IOPool_getNextRead(AMUDBRRxIOPool, 0);
+			 IOPool_getNextRead(AMPLATERxIOPool, 0);
 			 IOPool_getNextRead(AMGETBULLETRxIOPool, 0);
 			 aux_motor3_zero_angle = (IOPool_pGetReadData(AMUDBLRxIOPool, 0)->angle) * 360 / 8192.0;
 			 aux_motor4_zero_angle = (IOPool_pGetReadData(AMUDBRRxIOPool, 0)->angle) * 360 / 8192.0;
+			 plate_zero_angle=(IOPool_pGetReadData(AMPLATERxIOPool, 0)->angle) * 360 / 8192.0;
 			 getBullet_zero_angle = (IOPool_pGetReadData(AMGETBULLETRxIOPool, 0)->angle) * 360 / 8192.0;
 		 }
 		 
@@ -109,8 +113,8 @@ void AMControlTask(void const * argument){
 			 //continue;
 		 }
 		 
-		 aux1_targetSpeed=(-ChassisSpeedRef.forward_back_ref-ChassisSpeedRef.rotate_ref);
-		 aux2_targetSpeed=(+ChassisSpeedRef.forward_back_ref-ChassisSpeedRef.rotate_ref);
+		 aux1_targetSpeed=(-ChassisSpeedRef.forward_back_ref-ChassisSpeedRef.rotate_ref)*2;
+		 aux2_targetSpeed=(+ChassisSpeedRef.forward_back_ref-ChassisSpeedRef.rotate_ref)*2;
 		 setAux1WithSpeed(aux1_targetSpeed);
 		 setAux2WithSpeed(aux2_targetSpeed);
 ///
@@ -125,7 +129,7 @@ void AMControlTask(void const * argument){
 			 setAux3WithAngle(aux_motor34_position_target+aux_motor3_zero_angle);
 			 setAux4WithAngle(-aux_motor34_position_target+aux_motor4_zero_angle);
 
-			 setPlateWithAngle(plate_angle_target);
+			 setPlateWithAngle(plate_angle_target+plate_zero_angle);
 			 setGetBulletWithAngle(getBullet_angle_target+getBullet_zero_angle);
 		}
 	}
