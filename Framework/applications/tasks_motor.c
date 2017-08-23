@@ -113,8 +113,8 @@ void AMControlTask(void const * argument){
 			 //continue;
 		 }
 		 
-		 aux1_targetSpeed=(-ChassisSpeedRef.forward_back_ref-ChassisSpeedRef.rotate_ref)*2;
-		 aux2_targetSpeed=(+ChassisSpeedRef.forward_back_ref-ChassisSpeedRef.rotate_ref)*2;
+		 aux1_targetSpeed=(-ChassisSpeedRef.forward_back_ref-ChassisSpeedRef.rotate_ref)*4.5;
+		 aux2_targetSpeed=(+ChassisSpeedRef.forward_back_ref-ChassisSpeedRef.rotate_ref)*4.5;
 		 setAux1WithSpeed(aux1_targetSpeed);
 		 setAux2WithSpeed(aux2_targetSpeed);
 ///
