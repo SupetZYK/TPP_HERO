@@ -445,7 +445,7 @@ void HeroModeSwitch(RemoteSwitch_t *sw, uint8_t val)
 	if(sw->switch_value1 == REMOTE_SWITCH_CHANGE_3TO2)
 	{
 		Hero_Order=HERO_GETBULLET;
-		yawAngleTarget=-40;
+		yawAngleTarget=0;
 		pitchAngleTarget=0;
 	}
 	if(sw->switch_value1 == REMOTE_SWITCH_CHANGE_2TO3)
@@ -724,9 +724,9 @@ void WorkStateSwitchProcess(void)
 
 void StartBulletFrictionWheel()
 {
-	TIM4->CCR1 = 1300;
-	TIM4->CCR2 = 1300;
-	TIM4->CCR3 = 1300;
+	TIM4->CCR1 = 1000;
+	TIM4->CCR2 = 1195;
+	TIM4->CCR3 = 1000;
 }
 
 void StopBulletFrictionWheel()
